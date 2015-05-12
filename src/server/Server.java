@@ -18,7 +18,7 @@ public class Server {
 	
 	static Properties prop = new Properties();
 	static int port, maxUsers = 20, maxChannels = 10;
-	static final String version = "0.2";
+	static final String version = "0.3";
 	
 	public static ArrayList<BanNote> banNotes = new ArrayList<BanNote>();
 	public static Channel[] channels = new Channel[maxChannels];

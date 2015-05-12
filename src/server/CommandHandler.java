@@ -42,9 +42,10 @@ public class CommandHandler {
 	}
 	
 	public static String[] removeFirst(String[] command) {
+		String[] newCommand = new String[command.length - 1];
 		for (int i = 0; i < command.length -1; i++) {
-			command[i] = command[i +1];
+			newCommand[i] = command[i + 1];
 		}
-		return command;
+		return newCommand;
 	}
 }

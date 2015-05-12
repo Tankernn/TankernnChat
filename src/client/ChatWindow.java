@@ -138,7 +138,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 		try {
 			getMessages();
 		} catch (EOFException eof) {
-			chat.log(eof.getMessage() + " Disconnected from host.");
+			chat.log(eof.toString() + " Disconnected from host.");
 		} catch (ClassNotFoundException cnf) {
 			chat.log("The message recieved from the server could not be understood. Are you using the right version?");
 		} catch (IOException e) {

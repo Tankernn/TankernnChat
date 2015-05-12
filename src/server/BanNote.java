@@ -1,6 +1,7 @@
 package server;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class BanNote {
@@ -11,6 +12,7 @@ public class BanNote {
 		this.ip = ip;
 		if (duration == -1)
 			this.expiry = null;
+		
 		else
 			this.expiry = LocalDateTime.now().plus(duration, ChronoUnit.SECONDS);
 		this.reason = reason;
@@ -30,8 +32,12 @@ public class BanNote {
 	
 	@Override
 	public String toString() {
-		if (expiry != null)
-			return "You are banned from this server." + "\n" + "Reason: " + reason + "\n" + "Time left: " + LocalDateTime.now().compareTo(expiry);
-		return "You are banned from this server." + "\n" + "Reason: " + reason + "\n" + "Time left: forever.";
+		String expStr;
+		if (expiry == null)
+			expStr = "Forever";
+		else
+			expStr = expiry.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+		
+		return "You are banned from this server." + "\n" + "Reason: " + reason + "\n" + "Expiry: " + expStr;
 	}
 }
