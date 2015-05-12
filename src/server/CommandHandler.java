@@ -22,7 +22,11 @@ public class CommandHandler {
 			if ((commands[i].name).equals(command[0])) { //Look for command with correct name
 				if (caller.hasPermission(commands[i].permission)) //Check if the client has permission
 					if (command.length -1 >= commands[i].argNumber) { //Check the number of arguments
-						commands[i].execute(removeFirst(command), caller); //Execute command
+						try {
+							commands[i].execute(removeFirst(command), caller); //Execute command
+						} catch (Exception e) {
+							caller.send("Error while executing command!");
+						} 
 						return;
 					} else {
 						caller.send("More arguments required!");
@@ -37,7 +41,7 @@ public class CommandHandler {
 		caller.send("No such command!");
 	}
 	
-	private static String[] removeFirst(String[] command) {
+	public static String[] removeFirst(String[] command) {
 		for (int i = 0; i < command.length -1; i++) {
 			command[i] = command[i +1];
 		}

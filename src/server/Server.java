@@ -20,7 +20,7 @@ public class Server {
 	static int port, maxUsers = 20, maxChannels = 10;
 	static final String version = "0.2";
 	
-	public static ArrayList<String> bannedIps = new ArrayList<String>();
+	public static ArrayList<BanNote> banNotes = new ArrayList<BanNote>();
 	public static Channel[] channels = new Channel[maxChannels];
 	public static Client[] clients = new Client[maxUsers];
 	
@@ -75,13 +75,15 @@ public class Server {
 	
 	static void getNewClient() throws IOException {
 		Client newClient = new Client(Server.so.accept());
-		for (int i = 0; i < clients.length; i++)
-			if (positionFree(i)) {
-				clients[i] = newClient;
-				channels[0].addUser(newClient);
-				Server.broadcast(new Message(clients[i].username + " has connected."));
-				return;
-			}
+		if (newClient.readuser != null) {
+			for (int i = 0; i < clients.length; i++)
+				if (positionFree(i)) {
+					clients[i] = newClient;
+					channels[0].addUser(newClient);
+					Server.broadcast(new Message(clients[i].username + " has connected."));
+					return;
+				}
+		}
 	}
 
 	static void getClients() {
@@ -141,6 +143,17 @@ public class Server {
 		for (int i = 0; i < usersOnline.size(); i++)
 			usersOnlineStr[i] = usersOnline.get(i);
 		return usersOnlineStr;
+	}
 	
+	public static String getUsersOnlineString() {
+		String[] usersOnlineArr = getUsersOnline();
+		String usersOnline = "";
+		
+		for (int i = 0; i < usersOnlineArr.length; i++) {
+			if (i != 0)
+				usersOnline += "\n";
+			usersOnline += usersOnlineArr[i];
+		}
+		return usersOnline;
 	}
 }

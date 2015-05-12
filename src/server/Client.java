@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.time.LocalDateTime;
 
 import javax.swing.Timer;
 
@@ -57,11 +58,13 @@ public class Client implements Runnable, ActionListener {
 	public Client() {}
 	
 	private boolean validateUser() {
+		//No spaces
 		if (username.contains(" ")){
 			send("No spaces in usernames please!");
 			return false;
 		}
 		
+		//Not same username as anyone else
 		for (int i = 0; i < Server.clients.length; i++) {
 			if (!Server.positionFree(i))
 				if (Server.clients[i].username.equalsIgnoreCase(username)) {
@@ -70,10 +73,21 @@ public class Client implements Runnable, ActionListener {
 				}
 		}
 		
-		if (Server.bannedIps.contains(sock.getInetAddress().toString())) {
-			send("You are banned from this server!");
-			return false;
-		}
+		//No connect if banned
+		for (int i = 0; i < Server.banNotes.size(); i++)
+			if (Server.banNotes.get(i).ip.equals(sock.getInetAddress().toString())) {
+				BanNote bn = Server.banNotes.get(i);
+				if (bn.expiry == null) {
+					send(bn.toString());
+					return false;
+				} else if (bn.expiry.isBefore(LocalDateTime.now())) {
+					Server.banNotes.remove(i);
+					return true;
+				} else {
+					send(bn.toString());
+					return false;
+				}
+			}
 		
 		return true;
 	}
@@ -136,6 +150,7 @@ public class Client implements Runnable, ActionListener {
 	public void send(Object message) {
 		try {
 			objOut.writeObject(message);
+			objOut.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

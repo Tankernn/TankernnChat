@@ -8,37 +8,38 @@ import javax.swing.text.*;
 import common.Message;
 
 @SuppressWarnings("serial")
-public class Console extends JTextPane implements Runnable {
-	
-	String str;
-	SimpleAttributeSet style;
+public class Console extends JTextPane {
 	
 	void log(String str) {
-		this.str = str;
-		style = new SimpleAttributeSet();
+		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setForeground(style, Color.RED);
 		StyleConstants.setBold(style, true);
 		
-		SwingUtilities.invokeLater(this);
+		SwingUtilities.invokeLater(new AppendThread(str, style, this.getStyledDocument()));
 	}
 	
 	void log(Message mess) {
-		this.str = mess.toString();
-		this.style = mess.style;
-		
-		SwingUtilities.invokeLater(this);
+		SwingUtilities.invokeLater(new AppendThread(mess.toString(), mess.style, this.getStyledDocument()));
 	}
 	
-	@Override
-	public void run() {
-		StyledDocument doc = this.getStyledDocument();
+	private static class AppendThread extends Thread {
+		String text;
+		SimpleAttributeSet style;
+		StyledDocument doc;
 		
-		try
-		{
-		    doc.insertString(doc.getLength(), str + "\n", style);
+		public AppendThread(String text, SimpleAttributeSet style, StyledDocument doc) {
+			this.text = text;
+			this.style = style;
+			this.doc = doc;
 		}
-		catch(Exception e) {
-			System.out.println(e);
+		
+		@Override
+		public synchronized void run() {
+			try {
+			    doc.insertString(doc.getLength(), text + "\n", style);
+			} catch(Exception e) {
+				System.out.println(e);
+			}
 		}
 	}
 }

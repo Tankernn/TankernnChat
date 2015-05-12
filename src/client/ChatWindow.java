@@ -6,6 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,7 +29,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 	
 	Socket so;
 	ObjectInputStream objIn;
-	static PrintWriter out;
+	PrintWriter out;
 	
 	GridBagLayout g = new GridBagLayout();
 	GridBagConstraints con = new GridBagConstraints();
@@ -92,25 +93,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 	}
 	
-	public void getMessages() throws SocketException, IOException, ClassNotFoundException {
-		while(!getMessages.isInterrupted()) {
-			Object fromServer = objIn.readObject();
-			if (fromServer instanceof Message) {
-				Message mess = ((Message)fromServer);
-				chat.log(mess);
-				
-				model = new DefaultListModel<String>();
-				for (int i = 0; i < mess.usersOnline.length; i++)
-					model.addElement(mess.usersOnline[i]);
-				
-				userList.setModel(model);
-			} else if (fromServer instanceof String)
-				chat.log((String) fromServer);
-		}
-		throw new SocketException("Disconnected from host!");
-	}
-	
-	static void send(String text) {
+	void send(String text) {
 		out.println(text);
 	}
 	
@@ -124,10 +107,11 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 			out.close();
 		}
 		
-		chat.log("Connecting to " + adress + " on port " + port + ".");
 		so =		new Socket(adress, port);
-		objIn =	new ObjectInputStream(so.getInputStream());
+		objIn =		new ObjectInputStream(so.getInputStream());
 		out =		new PrintWriter(so.getOutputStream(), true);
+		
+		chat.log("Connected to " + adress + " on port " + port + ".");
 		
 		send(username);
 		
@@ -140,8 +124,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 		if (e.getSource() == skriv) {
 			send(skriv.getText());
 			skriv.setText("");
-		}
-		else if (e.getSource() == reconnect) {
+		} else if (e.getSource() == reconnect) {
 			try {
 				connect(adress, port, username);
 			} catch (IOException e1) {
@@ -154,8 +137,29 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 	public void run() {
 		try {
 			getMessages();
-		} catch (ClassNotFoundException | IOException e) {
+		} catch (EOFException eof) {
+			chat.log(eof.getMessage() + " Disconnected from host.");
+		} catch (ClassNotFoundException cnf) {
+			chat.log("The message recieved from the server could not be understood. Are you using the right version?");
+		} catch (IOException e) {
 			chat.log(e.toString());
+		}
+	}
+	
+	public void getMessages() throws SocketException, IOException, ClassNotFoundException {
+		while(!getMessages.isInterrupted()) {
+			Object fromServer = objIn.readObject();
+			if (fromServer instanceof Message) {
+				Message mess = ((Message)fromServer);
+				chat.log(mess);
+				
+				model = new DefaultListModel<String>();
+				for (int i = 0; i < mess.usersOnline.length; i++)
+					model.addElement(mess.usersOnline[i]);
+				
+				userList.setModel(model);
+			} else
+				chat.log(fromServer.toString());
 		}
 	}
 }

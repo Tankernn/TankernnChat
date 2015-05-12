@@ -55,7 +55,6 @@ public class ChatClient {
 		writeConfFile();
 		
 		try {
-			System.out.println("Connecting to " + host + " on port number " + port);
 			new ChatWindow(host, port, username);
 		} catch (IOException ex1) {
 			ex1.printStackTrace();
