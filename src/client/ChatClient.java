@@ -54,12 +54,7 @@ public class ChatClient {
 
 		writeConfFile();
 		
-		try {
-			new ChatWindow(host, port, username);
-		} catch (IOException ex1) {
-			ex1.printStackTrace();
-		}
-		
+		new ChatWindow(host, port, username);
 	}
 	
 	static void writeConfFile() {

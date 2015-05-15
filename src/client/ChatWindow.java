@@ -11,10 +11,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 import common.Message;
 
@@ -27,12 +29,13 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 	int port;
 	String username;
 	
-	Socket so;
+	Socket so = new Socket();
 	ObjectInputStream objIn;
 	PrintWriter out;
 	
 	GridBagLayout g = new GridBagLayout();
 	GridBagConstraints con = new GridBagConstraints();
+	
 	JPanel right = new JPanel();
 	JLabel lblUsersOnline = new JLabel("Users online:");
 	DefaultListModel<String> model = new DefaultListModel<String>();
@@ -43,35 +46,31 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 	JScrollPane scroll = new JScrollPane(chat);
 	JTextField skriv = new JTextField();
 	
-	public ChatWindow(String adress, int port, String username) throws IOException {
+	public ChatWindow(String adress, int port, String username) {
 		this.adress = adress;
 		this.port = port;
 		this.username = username;
 		
-		connect(adress, port, username);
-		
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		userList.setLayoutOrientation(JList.VERTICAL);
 		
+		lblUsersOnline.setHorizontalAlignment(JLabel.CENTER);
+		lblUsersOnline.setBorder(new EmptyBorder(5, 5, 5, 5));
+		
 		right.setLayout(g);
+		con.fill = GridBagConstraints.HORIZONTAL;
+		con.weightx = 1;
+		con.gridx = 0;
 		
+		right.add(lblUsersOnline, con);
+
 		con.weighty = 1;
-		con.gridy = 0;
-		con.gridheight = 1;
-		g.setConstraints(lblUsersOnline, con);
-		right.add(lblUsersOnline);
-		
 		con.fill = GridBagConstraints.BOTH;
-		con.weighty = 20;
-		con.gridy = 1; con.gridx = 0;
-		g.setConstraints(userList, con);
-		right.add(userList);
-		
-		con.weighty = 1;
-		con.gridy = 21;
-		con.gridheight = 1;
-		g.setConstraints(reconnect, con);
-		right.add(reconnect);
+		right.add(userList, con);
+
+		con.weighty = 0;
+		con.fill = GridBagConstraints.HORIZONTAL;
+		right.add(reconnect, con);
 		
 		reconnect.addActionListener(this);
 		
@@ -91,32 +90,53 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 		setVisible(true);
 		setTitle("Chat | Username: " + username);
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		
+		connect(adress, port, username);
 	}
 	
 	void send(String text) {
-		out.println(text);
+		if (so.isConnected() && !so.isClosed())
+			out.println(text);
+		else {
+			chat.log("Not connected to server!");
+			skriv.setEnabled(false);
+		}
 	}
 	
-	void connect(String adress, int port, String username) throws IOException {
+	void connect(String address, int port, String username) {
+		chat.log("Connecting to " + address + " on port " + port + ".");
 		if (getMessages != null)
 			getMessages.interrupt();
 		
-		if (so != null) {
+		try {
 			so.close();
 			objIn.close();
 			out.close();
+		} catch (NullPointerException ex) {
+			//Nothing
+		} catch (IOException ex) {
+			chat.log(ex.toString());
 		}
 		
-		so =		new Socket(adress, port);
-		objIn =		new ObjectInputStream(so.getInputStream());
-		out =		new PrintWriter(so.getOutputStream(), true);
+		try {
+			so = new Socket();
+			so.connect(new InetSocketAddress(address, port), 1000);
+			objIn =		new ObjectInputStream(so.getInputStream());
+			out =		new PrintWriter(so.getOutputStream(), true);
+		} catch (SocketTimeoutException ex) {
+			chat.log("Could not connect to server. (Connection timed out!)");
+			return;
+		} catch (IOException e) {
+			chat.log(e.toString());
+			return;
+		}
 		
-		chat.log("Connected to " + adress + " on port " + port + ".");
-		
-		send(username);
+		send(username); //First packet sent to server sets username
 		
 		getMessages = new Thread(this);
 		getMessages.start();
+		
+		skriv.setEnabled(true);
 	}
 	
 	@Override
@@ -125,11 +145,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 			send(skriv.getText());
 			skriv.setText("");
 		} else if (e.getSource() == reconnect) {
-			try {
-				connect(adress, port, username);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+			connect(adress, port, username);
 		}
 	}
 
@@ -146,7 +162,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 		}
 	}
 	
-	public void getMessages() throws SocketException, IOException, ClassNotFoundException {
+	public void getMessages() throws IOException, ClassNotFoundException {
 		while(!getMessages.isInterrupted()) {
 			Object fromServer = objIn.readObject();
 			if (fromServer instanceof Message) {
