@@ -10,10 +10,9 @@ The program is meant for chatting and briefly consists of a client part and a se
 * The system shall use as little bandwidth as possible.
 
 ### How to use
-1. [Download the latest version](http://tankernn.eu/?p=Java) from tankernn.eu
+1. Download the latest version from the 'releases' tab
   1. Download server
-  2. Download client
-  3. Tell all users to download the client
+  2. Tell all users to download the client
 2. Run the server by running `java -jar /path/to/ChatServer.jar` in a command prompt
 3. You will need to port forward if you're going to use the server over the internet
 4. Clients connect by double-clicking the ChatClient.jar file and typing in IP/domain-name, port and username and clicking 'OK'
