@@ -14,10 +14,10 @@ The program is meant for chatting and briefly consists of a client part and a se
   1. Download server
   2. Download client
   3. Tell all users to download the client
-2. Run the server by running ´java -jar /path/to/ChatServer.jar´ in a command prompt
+2. Run the server by running `java -jar /path/to/ChatServer.jar` in a command prompt
 3. You will need to port forward if you're going to use the server over the internet
 4. Clients connect by double-clicking the ChatClient.jar file and typing in IP/domain-name, port and username and clicking 'OK'
-5. Use ´/help´ on client or server for a list of commands
+5. Use `/help` on client or server for a list of commands
 
 ### How to collaborate
 1. Ask me for collaborator permissions
