@@ -21,15 +21,10 @@ public class Message implements java.io.Serializable {
 		this.channel = channel;
 		this.content = con;
 		usersOnline = Server.getUsersOnline();
-		
-		if (channel.equals("PM")) {
-			StyleConstants.setForeground(style, Color.GRAY);
-		}
 	}
 	
 	public Message(String send, String con) {
 		this("Info", send, con);
-		StyleConstants.setForeground(style, Color.BLUE);
 	}
 	
 	public Message(String con) {
@@ -45,6 +40,11 @@ public class Message implements java.io.Serializable {
 	
 	@Override
 	public String toString() {
+		if (channel.equals("PM"))
+			StyleConstants.setForeground(style, Color.GRAY);
+		else if (channel.equals("Info"))
+			StyleConstants.setForeground(style, Color.BLUE);
+		
 		DateFormat dateFormat = new SimpleDateFormat("[HH:mm:ss]");
 		Date time = new Date();
 		String timestamp = dateFormat.format(time);

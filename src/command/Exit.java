@@ -1,13 +1,13 @@
 package command;
 
 import server.Client;
+import server.Server;
 
 public class Exit extends Command{
 
 	@Override
 	public void execute(String[] args, Client caller) {
-		caller.send("Shutting down server!");
-		System.exit(0);
+		Server.exit();
 	}
 
 	@Override

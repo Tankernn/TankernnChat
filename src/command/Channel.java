@@ -15,7 +15,7 @@ public class Channel extends Command {
 		}
 		
 		try {
-			Server.getChannelByName(args[0]).addUser(caller);
+			Server.getChannelByName(args[0]).add(caller);
 		} catch (NullPointerException ex) {
 			caller.send(new Message("No such channel!"));
 			return;

@@ -7,7 +7,7 @@ public class List extends Command {
 	
 	@Override
 	public void execute(String[] args, Client caller) {
-		caller.send("Users online are:" + Server.getUsersOnlineString());
+		caller.send("Users online are:" + "\n" + Server.getUsersOnlineString());
 	}
 
 	@Override

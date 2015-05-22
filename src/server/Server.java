@@ -15,14 +15,13 @@ import server.CommandHandler;
 import server.Channel;
 
 public class Server {
-	
 	static Properties prop = new Properties();
-	static int port, maxUsers = 20, maxChannels = 10;
+	static int port, maxUsers, maxChannels;
 	static final String version = "0.3";
 	
 	public static ArrayList<BanNote> banNotes = new ArrayList<BanNote>();
-	public static Channel[] channels = new Channel[maxChannels];
-	public static Client[] clients = new Client[maxUsers];
+	public static Channel[] channels;
+	public static ClientCollection clients;
 	
 	static ServerSocket so;
 	public static LocalClient OPClient;
@@ -30,36 +29,18 @@ public class Server {
 	public static void main(String[] arg){
 		System.out.println("Starting ChatServer version " + version + "...");
 		
-		System.out.println("Loadning properties file!");
-		try {
-			prop.load(new FileInputStream("server.properties"));
-		} catch (FileNotFoundException ex1) {
-			try {
-				new File("server.properties").createNewFile();
-				prop.setProperty("port", "25566");
-				prop.store(new FileWriter("server.properties"), "ChatServer config file");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-		} catch (IOException e) {
-			System.out.println("Could not load properties!");
-			e.printStackTrace();
-		}
-		System.out.println("Reading portnumber from properties!");
-		Scanner sc = new Scanner(prop.getProperty("port"));
-		port = sc.nextInt();
-		sc.close();
+		loadProperties();
 		
-		System.out.println("Setting up socket!");
+		System.out.println("Setting up socket.");
 		try {
 			so = new ServerSocket(port);
 		} catch(IOException ex) {
-			System.out.println("Error setting up socket! Server already running?");
+			System.out.println("Error setting up socket. Server already running?");
 			System.exit(0);
 		}
 		
-		System.out.println("Starting main channel!");
+		clients = new ClientCollection();
+		channels = new Channel[maxChannels];
 		channels[0] = new Channel("Main");
 		
 		System.out.println("Starting commandhandler!");
@@ -72,24 +53,20 @@ public class Server {
 		
 		getClients();
 	}
-	
-	static void getNewClient() throws IOException {
-		Client newClient = new Client(Server.so.accept());
-		if (newClient.readuser != null) {
-			for (int i = 0; i < clients.length; i++)
-				if (positionFree(i)) {
-					clients[i] = newClient;
-					channels[0].addUser(newClient);
-					Server.broadcast(new Message(clients[i].username + " has connected."));
-					return;
-				}
-		}
-	}
 
 	static void getClients() {
 		while(true) {
+			Client newClient = null;
 			try {
-				getNewClient();
+				newClient = new Client(Server.so.accept());
+				clients.add(newClient);
+				channels[0].add(newClient);
+				broadcast(new Message(newClient.username + " has connected."));
+			} catch (IllegalArgumentException ex) {
+				
+			} catch (ArrayIndexOutOfBoundsException ex) {
+				newClient.send(new Message("Server full!"));
+				newClient.disconnect(false);
 			} catch (Exception ex) {
 				System.out.println("Could not get new client!");
 				ex.printStackTrace();
@@ -97,16 +74,7 @@ public class Server {
 		}
 	}
 	
-	public static Client getUserByName(String name) throws NullPointerException {
-		for (int i = 0; i < clients.length; i++) {
-			if (!positionFree(i))
-				if (clients[i].username.equals(name))
-					return clients[i];
-		}
-		throw new NullPointerException();
-	}
-	
-	public static Channel getChannelByName(String name) {
+	public static Channel getChannelByName(String name) throws NullPointerException {
 		for (int i = 0; i < channels.length; i++) {
 			if (channels[i] != null)
 				if (channels[i].name.equals(name)) {
@@ -115,45 +83,79 @@ public class Server {
 		}
 		return null;
 	}
-	
-	static boolean positionFree(int pos) {
-		return clients[pos] == null || !clients[pos].isConnected();
-	}
 
 	public static void broadcast(Message mess) {
-		for (int i = 0; i < clients.length; i++)
-			if (!positionFree(i))
-				clients[i].send(mess);
-		OPClient.send(mess.toString());
-	}
-	
-	public static void broadcast(Object mess) {
-		for (int i = 0; i < clients.length; i++)
-			if (!positionFree(i))
-				clients[i].send(mess);
+		clients.broadcast(mess);
 	}
 
 	public static String[] getUsersOnline() {
-		ArrayList<String> usersOnline = new ArrayList<String>();
-		for (int i = 0; i < clients.length; i++)
-			if (!Server.positionFree(i)) {
-				usersOnline.add(clients[i].username);
-			}
-		String[] usersOnlineStr = new String[usersOnline.size()];
-		for (int i = 0; i < usersOnline.size(); i++)
-			usersOnlineStr[i] = usersOnline.get(i);
-		return usersOnlineStr;
+		return clients.listClientsArray();
 	}
 	
 	public static String getUsersOnlineString() {
-		String[] usersOnlineArr = getUsersOnline();
-		String usersOnline = "";
+		return clients.listClients();
+	}
+
+	public static Client getUserByName(String username) {
+		return clients.getClientByName(username);
+	}
+	
+	public static void cleanUp() { //Makes sure the client gets removed from all arrays
+		clients.cleanUp();
+		for (int i = 0; i < channels.length; i++)
+			if (channels[i] != null)
+				channels[i].cleanUp();
+	}
+	
+	public static void exit() {
+		broadcast(new Message("Shutting down server!"));
 		
-		for (int i = 0; i < usersOnlineArr.length; i++) {
-			if (i != 0)
-				usersOnline += "\n";
-			usersOnline += usersOnlineArr[i];
+		for (int i = 0; i < clients.size(); i++)
+			clients.get(i).disconnect();
+		
+		System.exit(0);
+	}
+	
+	static int CInt(String str) {
+		int i;
+		Scanner sc = new Scanner(str);
+		i = sc.nextInt();
+		sc.close();
+		return i;
+	}
+	
+	static void loadProperties() {
+		System.out.println("Loadning properties file.");
+		try {
+			prop.load(new FileInputStream("server.properties"));
+		} catch (FileNotFoundException e1) {
+			newPropertiesFile();
+		} catch (IOException e2) {
+			System.out.println("Could not load properties.");
+			e2.printStackTrace();
 		}
-		return usersOnline;
+		
+		System.out.println("Reading numbers from properties object.");
+		try {
+			port = CInt(prop.getProperty("port"));
+			maxUsers = CInt(prop.getProperty("maxUsers"));
+			maxChannels = CInt(prop.getProperty("maxChannels"));
+		} catch (NullPointerException ex) {
+			System.out.println("Could not get values from properties file.");
+			newPropertiesFile();
+		}
+	}
+	
+	static void newPropertiesFile() {
+		System.out.println("Generating new preperties file.");
+		try {
+			new File("server.properties").createNewFile();
+			prop.setProperty("port", "25566");
+			prop.setProperty("maxUsers", "20");
+			prop.setProperty("maxChannels", "10");
+			prop.store(new FileWriter("server.properties"), "ChatServer config file");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

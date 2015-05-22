@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalDateTime;
-
 import javax.swing.Timer;
 
 import common.Message;
@@ -42,7 +41,7 @@ public class Client implements Runnable, ActionListener {
 		
 		if (!validateUser()) {
 			disconnect(false);
-			return;
+			throw new IllegalArgumentException();
 		}
 		
 		permissions = new String[] {"noob.*"};
@@ -65,14 +64,11 @@ public class Client implements Runnable, ActionListener {
 		}
 		
 		//Not same username as anyone else
-		for (int i = 0; i < Server.clients.length; i++) {
-			if (!Server.positionFree(i))
-				if (Server.clients[i].username.equalsIgnoreCase(username)) {
-					send("Username already taken!");
-					return false;
-				}
+		if (Server.clients.getClientByName(username) != null) {
+			send("Username already taken!");
+			return false;
 		}
-		
+			
 		//No connect if banned
 		for (int i = 0; i < Server.banNotes.size(); i++)
 			if (Server.banNotes.get(i).ip.equals(sock.getInetAddress().toString())) {
@@ -93,6 +89,9 @@ public class Client implements Runnable, ActionListener {
 	}
 	
 	public void disconnect(boolean output) {
+		if (!isConnected()) //Already disconnected
+			return;
+		
 		if (timer.isRunning())
 			timer.stop();
 		
@@ -104,6 +103,9 @@ public class Client implements Runnable, ActionListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		Server.cleanUp();
+		
 		if (output)
 			Server.broadcast(new Message(username + " has disconnected."));
 	}
@@ -129,16 +131,19 @@ public class Client implements Runnable, ActionListener {
 		String lastMess;
 		try {
 			while (!readuser.isInterrupted() && ((lastMess = in.readLine()) != null)) {
-				if (lastMess.startsWith("/")) {
+				if (lastMess.startsWith("/")) //Command handling
+				{
 					String[] commandarray = lastMess.substring(1).split(" ");
 					CommandHandler.executeCommand(commandarray, this);
-				} else {
+				}
+				else //Normal message handling
+				{
 					messLastPeriod++;
 					if (messLastPeriod > 5) {
 						send("No spamming!");
 						disconnect(false);
 					} else
-						primaryChannel.broadcast(this, lastMess);
+						primaryChannel.broadcast(new Message(this.username, lastMess));
 				}
 			}
 			disconnect();
@@ -154,6 +159,11 @@ public class Client implements Runnable, ActionListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return username;
 	}
 
 	@Override
