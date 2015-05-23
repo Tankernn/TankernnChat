@@ -9,16 +9,15 @@ public class PrivateMessage extends Command {
 
 	@Override
 	public void execute(String[] args, Client caller) {
-		Client reciever = null;
-		try {
-			reciever = Server.getUserByName(args[0]);
-		} catch (Exception ex) {
-			caller.send("No such user!");
+		Client reciever = Server.getUserByName(args[0]);
+			
+		if (caller.equals(reciever)) {
+			caller.send("Please don't speak with yourself.");
+			return;
+		} else if (reciever == null) {
+			caller.send("No user called " + args[0] + ".");
 			return;
 		}
-			
-		if (caller.equals(reciever))
-			return;
 		
 		Message mess = new Message("PM", caller.username, this.stringArrayToString(CommandHandler.removeFirst(args)));
 		

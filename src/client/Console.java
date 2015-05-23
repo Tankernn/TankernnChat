@@ -10,6 +10,10 @@ import common.Message;
 @SuppressWarnings("serial")
 public class Console extends JTextPane {
 	
+	public Console() {
+		setEditable(false);
+	}
+	
 	void log(String str) {
 		SimpleAttributeSet style = new SimpleAttributeSet();
 		StyleConstants.setForeground(style, Color.RED);

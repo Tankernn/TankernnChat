@@ -107,7 +107,7 @@ public class Client implements Runnable, ActionListener {
 		Server.cleanUp();
 		
 		if (output)
-			Server.broadcast(new Message(username + " has disconnected."));
+			Server.wideBroadcast(new Message(username + " has disconnected."));
 	}
 	
 	public void disconnect() {

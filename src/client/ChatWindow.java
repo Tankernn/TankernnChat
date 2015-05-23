@@ -4,8 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +17,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -21,13 +25,13 @@ import javax.swing.border.EmptyBorder;
 import common.Message;
 
 @SuppressWarnings("serial")
-public class ChatWindow extends JFrame implements ActionListener, Runnable{
+public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyListener{
 	Thread getMessages;
 	static File confFile = new File("client.properties");
 	
-	String adress;
-	int port;
-	String username;
+	String adress, username;
+	ArrayList<String> lastMess = new ArrayList<String>();
+	int port, messIndex = 0;
 	
 	Socket so = new Socket();
 	ObjectInputStream objIn;
@@ -44,19 +48,20 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 	
 	Console chat = new Console();
 	JScrollPane scroll = new JScrollPane(chat);
-	JTextField skriv = new JTextField();
+	JTextField write = new JTextField();
 	
 	public ChatWindow(String adress, int port, String username) {
 		this.adress = adress;
 		this.port = port;
 		this.username = username;
 		
+		//List config
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		userList.setLayoutOrientation(JList.VERTICAL);
-		
+		//Label config
 		lblUsersOnline.setHorizontalAlignment(JLabel.CENTER);
 		lblUsersOnline.setBorder(new EmptyBorder(5, 5, 5, 5));
-		
+		//Layout config
 		right.setLayout(g);
 		con.fill = GridBagConstraints.HORIZONTAL;
 		con.weightx = 1;
@@ -72,23 +77,24 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 		con.fill = GridBagConstraints.HORIZONTAL;
 		right.add(reconnect, con);
 		
-		reconnect.addActionListener(this);
-		
 		setLayout(new BorderLayout());
-		add(chat, BorderLayout.NORTH); add(skriv, BorderLayout.SOUTH); add(right, BorderLayout.EAST);
+		add(chat, BorderLayout.NORTH); add(write, BorderLayout.SOUTH); add(right, BorderLayout.EAST);
 		
+		//Scrollbar config
 		add(scroll);
 		scroll.setMinimumSize(new Dimension(100, 100));
 		scroll.setViewportView(chat);
 		scroll.setSize(500, 130);
 		
-		skriv.addActionListener(this);
-		chat.setSize(500, 450);
-		chat.setEditable(false);
+		//Listener config
+		reconnect.addActionListener(this);
+		write.addKeyListener(this);
 		
-		setSize(500, 500);
+		//Window config
+		this.setLocation(new Point(100, 100));
+		setSize(600, 600);
 		setVisible(true);
-		setTitle("Chat | Username: " + username);
+		setTitle("Chat on " + adress + " | Username: " + username);
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		
 		connect(adress, port, username);
@@ -99,7 +105,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 			out.println(text);
 		else {
 			chat.log("Not connected to server!");
-			skriv.setEnabled(false);
+			write.setEnabled(false);
 		}
 	}
 	
@@ -136,17 +142,13 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 		getMessages = new Thread(this);
 		getMessages.start();
 		
-		skriv.setEnabled(true);
+		write.setEnabled(true);
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == skriv) {
-			send(skriv.getText());
-			skriv.setText("");
-		} else if (e.getSource() == reconnect) {
+		if (e.getSource() == reconnect)
 			connect(adress, port, username);
-		}
 	}
 
 	@Override
@@ -178,4 +180,41 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable{
 				chat.log(fromServer.toString());
 		}
 	}
+
+	@Override
+	public void keyPressed(KeyEvent eKey) {
+		int keyCode = eKey.getKeyCode();
+		 switch( keyCode ) {
+	        case KeyEvent.VK_UP:
+	        	if (messIndex > 0)
+	        		messIndex--;
+	        	if (!lastMess.isEmpty())
+	        		write.setText(lastMess.get(messIndex));
+	            break;
+	        case KeyEvent.VK_DOWN:
+	        	if (messIndex <= lastMess.size())
+	        		messIndex++;
+	        	if (messIndex >= lastMess.size()) {
+	        		messIndex = lastMess.size();
+	        		write.setText("");
+	        	} else
+	        		write.setText(lastMess.get(messIndex));
+	            break;
+	        case KeyEvent.VK_ENTER:
+	        	String text = write.getText().trim();
+	    		if (!text.equals("")) {
+	    			send(text);
+	    			lastMess.add(text);
+	    			messIndex = lastMess.size();
+	    			write.setText("");
+	    		}
+	        	break;
+	     }
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {}
 }

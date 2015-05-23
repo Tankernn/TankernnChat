@@ -7,7 +7,23 @@ public class List extends Command {
 	
 	@Override
 	public void execute(String[] args, Client caller) {
-		caller.send("Users online are:" + "\n" + Server.getUsersOnlineString());
+		String arr, channelName = null;
+		
+		if (args.length >= 1) {
+			channelName = args[0];
+			try {
+				arr = Server.getChannelByName(channelName).listClients();
+			} catch (NullPointerException ex) {
+				caller.send("No channel named " + channelName + ".");
+				return;
+			}
+		} else
+			arr =  Server.listClients();
+		
+		if (channelName == null)
+			caller.send("Users online are:" + "\n" + arr);
+		else
+			caller.send("Users in channel " + channelName + " are:" + "\n" + arr);
 	}
 
 	@Override
@@ -22,7 +38,7 @@ public class List extends Command {
 
 	@Override
 	public String writeDescription() {
-		return "Lists all users online.";
+		return "Lists all users online. (/list [channel])";
 	}
 
 	@Override

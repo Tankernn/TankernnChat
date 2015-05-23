@@ -61,7 +61,7 @@ public class Server {
 				newClient = new Client(Server.so.accept());
 				clients.add(newClient);
 				channels[0].add(newClient);
-				broadcast(new Message(newClient.username + " has connected."));
+				wideBroadcast(new Message(newClient.username + " has connected."));
 			} catch (IllegalArgumentException ex) {
 				
 			} catch (ArrayIndexOutOfBoundsException ex) {
@@ -84,7 +84,7 @@ public class Server {
 		return null;
 	}
 
-	public static void broadcast(Message mess) {
+	public static void wideBroadcast(Message mess) {
 		clients.broadcast(mess);
 	}
 
@@ -92,7 +92,7 @@ public class Server {
 		return clients.listClientsArray();
 	}
 	
-	public static String getUsersOnlineString() {
+	public static String listClients() {
 		return clients.listClients();
 	}
 
@@ -108,7 +108,7 @@ public class Server {
 	}
 	
 	public static void exit() {
-		broadcast(new Message("Shutting down server!"));
+		wideBroadcast(new Message("Shutting down server!"));
 		
 		for (int i = 0; i < clients.size(); i++)
 			clients.get(i).disconnect();

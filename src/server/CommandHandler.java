@@ -26,6 +26,7 @@ public class CommandHandler {
 							commands[i].execute(removeFirst(command), caller); //Execute command
 						} catch (Exception e) {
 							caller.send("Error while executing command!");
+							e.printStackTrace();
 						} 
 						return;
 					} else {
