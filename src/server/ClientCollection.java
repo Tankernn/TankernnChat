@@ -22,17 +22,17 @@ public class ClientCollection extends ArrayList<Client>{
 	}
 	
 	public Client getClientByName(String name) throws NullPointerException {
-		for (int i = 0; i < size(); i++) {
-			if (get(i).username.equals(name))
-				return get(i);
+		for (Client c: this) {
+			if (c.username.equals(name))
+				return c;
 		}
 		return null;
 	}
 	
 	void broadcast(Message mess) { //Broadcast to all
 		 if (mess.validate()) {
-			for (int i = 0; i < size(); i++)
-				get(i).send(mess);
+			for (Client c: this)
+				c.send(mess);
 			Server.OPClient.send(mess.toString());
 		}
 	}
@@ -56,7 +56,7 @@ public class ClientCollection extends ArrayList<Client>{
 	public void remove(Client user, boolean disconnect) { //Remove and disconnect if needed
 		if (disconnect)
 			user.disconnect();
-		remove(user);
+		super.remove(user);
 	}
 	
 	public String listClients() { //String from array

@@ -102,9 +102,9 @@ public class Server {
 	
 	public static void cleanUp() { //Makes sure the client gets removed from all arrays
 		clients.cleanUp();
-		for (int i = 0; i < channels.length; i++)
-			if (channels[i] != null)
-				channels[i].cleanUp();
+		for (Channel c: channels)
+			if (c != null)
+				c.cleanUp();
 	}
 	
 	public static void exit() {

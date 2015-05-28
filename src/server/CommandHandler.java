@@ -18,12 +18,12 @@ public class CommandHandler {
 	}
 	
 	public static void executeCommand(String[] command, Client caller) {
-		for (int i = 0; i < commands.length; i++) { //Go through all commands
-			if ((commands[i].name).equals(command[0])) { //Look for command with correct name
-				if (caller.hasPermission(commands[i].permission)) //Check if the client has permission
-					if (command.length -1 >= commands[i].argNumber) { //Check the number of arguments
+		for (Command comm: commands) { //Go through all commands
+			if ((comm.name).equals(command[0])) { //Look for command with correct name
+				if (caller.hasPermission(comm.permission)) //Check if the client has permission
+					if (command.length -1 >= comm.argNumber) { //Check the number of arguments
 						try {
-							commands[i].execute(removeFirst(command), caller); //Execute command
+							comm.execute(removeFirst(command), caller); //Execute command
 						} catch (Exception e) {
 							caller.send("Error while executing command!");
 							e.printStackTrace();
