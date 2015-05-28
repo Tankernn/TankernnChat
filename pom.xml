@@ -38,6 +38,9 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+					<argLine>${argLine}</argLine>
+				</configuration>
 				<version>0.5.8.201207111220</version>
 				<executions>
 					<execution>
