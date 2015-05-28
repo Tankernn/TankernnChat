@@ -33,6 +33,7 @@
 	</dependencies>
 
 	<build>
+		<sourceDirectory>src</sourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -57,4 +58,3 @@
 	</build>
 
 </project>
-
