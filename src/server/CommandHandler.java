@@ -7,14 +7,16 @@ public class CommandHandler {
 	public static Command[] commands;
 	
 	public CommandHandler() {
-		commands = new Command[7];
+		commands = new Command[9];
 		commands[0] = new command.Kick();
 		commands[1] = new command.List();
 		commands[2] = new command.Exit();
 		commands[3] = new command.Help();
 		commands[4] = new command.PrivateMessage();
-		commands[5] = new command.Channel();
+		commands[5] = new command.JoinChannel();
 		commands[6] = new command.Ban();
+		commands[7] = new command.LeaveChannel();
+		commands[8] = new command.CreateChannel();
 	}
 	
 	public static void executeCommand(String[] command, Client caller) {

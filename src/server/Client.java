@@ -26,7 +26,7 @@ public class Client implements Runnable, ActionListener {
 	int messLastPeriod = 0;
 	Timer timer = new Timer(3000, this);
 	
-	public Channel primaryChannel = Server.channels[0];
+	public Channel primaryChannel = Server.channels.get(0);
 	
 	public Client(Socket s) {
 		sock = s;
@@ -133,7 +133,7 @@ public class Client implements Runnable, ActionListener {
 			while (!readuser.isInterrupted() && ((lastMess = in.readLine()) != null)) {
 				if (lastMess.startsWith("/")) //Command handling
 				{
-					String[] commandarray = lastMess.substring(1).split(" ");
+					String[] commandarray = lastMess.toLowerCase().substring(1).split(" ");
 					CommandHandler.executeCommand(commandarray, this);
 				}
 				else //Normal message handling

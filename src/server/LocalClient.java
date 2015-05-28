@@ -18,5 +18,6 @@ public class LocalClient extends Client {
 	@Override
 	public void send(Object message) {
 		System.out.println(message);
+		Server.log.log(message.toString());
 	}
 }

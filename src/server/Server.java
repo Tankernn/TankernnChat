@@ -16,38 +16,53 @@ import server.Channel;
 
 public class Server {
 	static Properties prop = new Properties();
-	static int port, maxUsers, maxChannels;
+	static int port, maxUsers;
 	static final String version = "0.3";
 	
 	public static ArrayList<BanNote> banNotes = new ArrayList<BanNote>();
-	public static Channel[] channels;
+	public static ArrayList<Channel> channels;
 	public static ClientCollection clients;
 	
 	static ServerSocket so;
 	public static LocalClient OPClient;
+	public static Logger log;
 	
 	public static void main(String[] arg){
 		System.out.println("Starting ChatServer version " + version + "...");
 		
 		loadProperties();
 		
-		System.out.println("Setting up socket.");
+		System.out.print("Setting up socket...");
 		try {
 			so = new ServerSocket(port);
 		} catch(IOException ex) {
 			System.out.println("Error setting up socket. Server already running?");
 			System.exit(0);
 		}
+		System.out.println("Done");
 		
 		clients = new ClientCollection();
-		channels = new Channel[maxChannels];
-		channels[0] = new Channel("Main");
+		channels = new ArrayList<Channel>();
+		channels.add(new Channel("Main"));
 		
-		System.out.println("Starting commandhandler!");
+		System.out.print("Starting commandhandler...");
 		new CommandHandler();
+		System.out.println("Done");
 		
-		System.out.println("Creating virtual local client!");
+		System.out.print("Creating virtual local client...");
 		OPClient = new LocalClient();
+		System.out.println("Done");
+		
+		System.out.print("Starting logger...");
+		try {
+			log = new Logger();
+		} catch (IOException e) {
+			System.out.println();
+			System.out.println("Unable to start logger.");
+			e.printStackTrace();
+			return;
+		}
+		System.out.println("Done");
 		
 		System.out.println("Server started successfully!");
 		
@@ -60,7 +75,7 @@ public class Server {
 			try {
 				newClient = new Client(Server.so.accept());
 				clients.add(newClient);
-				channels[0].add(newClient);
+				channels.get(0).add(newClient);
 				wideBroadcast(new Message(newClient.username + " has connected."));
 			} catch (IllegalArgumentException ex) {
 				
@@ -75,11 +90,10 @@ public class Server {
 	}
 	
 	public static Channel getChannelByName(String name) throws NullPointerException {
-		for (int i = 0; i < channels.length; i++) {
-			if (channels[i] != null)
-				if (channels[i].name.equals(name)) {
-					return channels[i];
-				}
+		for (int i = 0; i < channels.size(); i++) {
+			if (channels.get(i).name.equals(name)) {
+				return channels.get(i);
+			}
 		}
 		return null;
 	}
@@ -113,6 +127,8 @@ public class Server {
 		for (int i = 0; i < clients.size(); i++)
 			clients.get(i).disconnect();
 		
+		log.close();
+		
 		System.exit(0);
 	}
 	
@@ -139,7 +155,6 @@ public class Server {
 		try {
 			port = CInt(prop.getProperty("port"));
 			maxUsers = CInt(prop.getProperty("maxUsers"));
-			maxChannels = CInt(prop.getProperty("maxChannels"));
 		} catch (NullPointerException ex) {
 			System.out.println("Could not get values from properties file.");
 			newPropertiesFile();
@@ -152,7 +167,6 @@ public class Server {
 			new File("server.properties").createNewFile();
 			prop.setProperty("port", "25566");
 			prop.setProperty("maxUsers", "20");
-			prop.setProperty("maxChannels", "10");
 			prop.store(new FileWriter("server.properties"), "ChatServer config file");
 		} catch (IOException e) {
 			e.printStackTrace();

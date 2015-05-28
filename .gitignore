@@ -1,8 +1,10 @@
 .settings/
 .metadata/
 bin/
+logs/
 *.class
 *.properties
+*.log
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
