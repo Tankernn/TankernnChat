@@ -1,5 +1,7 @@
 package command;
 
+import common.Message;
+import common.Message.MessageType;
 import server.Client;
 import server.Server;
 
@@ -14,16 +16,16 @@ public class List extends Command {
 			try {
 				arr = Server.getChannelByName(channelName).listClients();
 			} catch (NullPointerException ex) {
-				caller.send("No channel named " + channelName + ".");
+				caller.send(new Message("No channel named " + channelName + ".", MessageType.ERROR, false));
 				return;
 			}
 		} else
 			arr =  Server.listClients();
 		
 		if (channelName == null)
-			caller.send("Users online are:" + "\n" + arr);
+			caller.send(new Message("Users online are:" + "\n" + arr, MessageType.COMMAND, false));
 		else
-			caller.send("Users in channel " + channelName + " are:" + "\n" + arr);
+			caller.send(new Message("Users in channel " + channelName + " are:" + "\n" + arr, MessageType.COMMAND, false));
 	}
 
 	@Override

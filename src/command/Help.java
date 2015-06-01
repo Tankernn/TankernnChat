@@ -1,5 +1,7 @@
 package command;
 
+import common.Message;
+import common.Message.MessageType;
 import server.Client;
 import server.CommandHandler;
 
@@ -15,7 +17,7 @@ public class Help extends Command {
 			if (i + 1 < CommandHandler.commands.length)
 				help += "\n";
 		}
-		caller.send(help);
+		caller.send(new Message(help, MessageType.COMMAND, false));
 	}
 
 	@Override

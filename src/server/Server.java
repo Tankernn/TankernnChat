@@ -132,7 +132,7 @@ public class Server {
 		System.exit(0);
 	}
 	
-	static int CInt(String str) {
+	public static int CInt(String str) {
 		int i;
 		Scanner sc = new Scanner(str);
 		i = sc.nextInt();

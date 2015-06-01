@@ -19,7 +19,7 @@ public class PrivateMessage extends Command {
 			return;
 		}
 		
-		Message mess = new Message("PM", caller.username, this.stringArrayToString(CommandHandler.removeFirst(args)));
+		Message mess = new Message("PM", caller.username, this.stringArrayToString(CommandHandler.removeFirst(args)), Message.MessageType.PM);
 		
 		reciever.send(mess); caller.send(mess);
 		

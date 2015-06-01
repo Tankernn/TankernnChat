@@ -1,7 +1,5 @@
 package client;
 
-import java.awt.Color;
-
 import javax.swing.*;
 import javax.swing.text.*;
 
@@ -12,14 +10,6 @@ public class Console extends JTextPane {
 	
 	public Console() {
 		setEditable(false);
-	}
-	
-	void log(String str) {
-		SimpleAttributeSet style = new SimpleAttributeSet();
-		StyleConstants.setForeground(style, Color.RED);
-		StyleConstants.setBold(style, true);
-		
-		SwingUtilities.invokeLater(new AppendThread(str, style, this.getStyledDocument()));
 	}
 	
 	void log(Message mess) {

@@ -133,7 +133,7 @@ public class Client implements Runnable, ActionListener {
 			while (!readuser.isInterrupted() && ((lastMess = in.readLine()) != null)) {
 				if (lastMess.startsWith("/")) //Command handling
 				{
-					String[] commandarray = lastMess.toLowerCase().substring(1).split(" ");
+					String[] commandarray = lastMess.substring(1).split(" ");
 					CommandHandler.executeCommand(commandarray, this);
 				}
 				else //Normal message handling
