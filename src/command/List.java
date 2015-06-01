@@ -27,12 +27,12 @@ public class List extends Command {
 	}
 
 	@Override
-	public String setName() {
+	public String getName() {
 		return "list";
 	}
 
 	@Override
-	public int setMinArgNumber() {
+	public int getMinArgNumber() {
 		return 0;
 	}
 
@@ -42,7 +42,7 @@ public class List extends Command {
 	}
 
 	@Override
-	public String setPermission() {
+	public String getPermission() {
 		return "noob.list";
 	}
 

@@ -21,9 +21,9 @@ public class CommandHandler {
 	
 	public static void executeCommand(String[] command, Client caller) {
 		for (Command comm: commands) { //Go through all commands
-			if ((comm.name).equals(command[0])) { //Look for command with correct name
-				if (caller.hasPermission(comm.permission)) //Check if the client has permission
-					if (command.length -1 >= comm.argNumber) { //Check the number of arguments
+			if ((comm.getName()).equals(command[0])) { //Look for command with correct name
+				if (caller.hasPermission(comm.getPermission())) //Check if the client has permission
+					if (command.length -1 >= comm.getMinArgNumber()) { //Check the number of arguments
 						try {
 							comm.execute(removeFirst(command), caller); //Execute command
 						} catch (Exception e) {
@@ -50,5 +50,9 @@ public class CommandHandler {
 			newCommand[i] = command[i + 1];
 		}
 		return newCommand;
+	}
+	
+	public static String stringArrayToString(String[] strArr) {
+		return strArr.toString().replace("[", "").replace("]", "").replace(", ", " ");
 	}
 }

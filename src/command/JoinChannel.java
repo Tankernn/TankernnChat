@@ -22,12 +22,12 @@ public class JoinChannel extends Command {
 	}
 
 	@Override
-	public String setName() {
+	public String getName() {
 		return "join";
 	}
 
 	@Override
-	public String setPermission() {
+	public String getPermission() {
 		return "noob.channel";
 	}
 
@@ -37,7 +37,7 @@ public class JoinChannel extends Command {
 	}
 
 	@Override
-	public int setMinArgNumber() {
+	public int getMinArgNumber() {
 		return 1;
 	}
 

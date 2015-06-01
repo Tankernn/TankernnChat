@@ -25,12 +25,12 @@ public class LeaveChannel extends Command{
 	}
 
 	@Override
-	public String setName() {
+	public String getName() {
 		return "leave";
 	}
 
 	@Override
-	public String setPermission() {
+	public String getPermission() {
 		return "noob.leave";
 	}
 
@@ -40,7 +40,7 @@ public class LeaveChannel extends Command{
 	}
 
 	@Override
-	public int setMinArgNumber() {
+	public int getMinArgNumber() {
 		return 1;
 	}
 

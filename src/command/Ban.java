@@ -35,11 +35,11 @@ public class Ban extends Command {
 				duration = new Scanner(args[1]).nextInt();
 				
 				if (args.length >= 3)
-					bn = new BanNote(IP, duration, this.stringArrayToString(CommandHandler.removeFirst(CommandHandler.removeFirst(args))));
+					bn = new BanNote(IP, duration, CommandHandler.stringArrayToString(CommandHandler.removeFirst(CommandHandler.removeFirst(args))));
 				else
 					bn = new BanNote(IP, duration);
 			} catch (InputMismatchException ime) {
-				bn = new BanNote(IP, this.stringArrayToString(CommandHandler.removeFirst(args)));
+				bn = new BanNote(IP, CommandHandler.stringArrayToString(CommandHandler.removeFirst(args)));
 			}
 		
 		Server.banNotes.add(bn);
@@ -47,12 +47,12 @@ public class Ban extends Command {
 	}
 
 	@Override
-	public String setName() {
+	public String getName() {
 		return "ban";
 	}
 
 	@Override
-	public String setPermission() {
+	public String getPermission() {
 		return "server.ban";
 	}
 
@@ -62,7 +62,7 @@ public class Ban extends Command {
 	}
 
 	@Override
-	public int setMinArgNumber() {
+	public int getMinArgNumber() {
 		return 1;
 	}
 

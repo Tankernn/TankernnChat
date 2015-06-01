@@ -9,7 +9,7 @@ public class Help extends Command {
 	public void execute(String[] args, Client caller) {
 		String help = "Help for all commands:" + "\n";
 		for (int i = 0; i < CommandHandler.commands.length; i++) {
-			help += CommandHandler.commands[i].name + ": ";
+			help += CommandHandler.commands[i].getName() + ": ";
 			help += "\t";
 			help += CommandHandler.commands[i].writeDescription();
 			if (i + 1 < CommandHandler.commands.length)
@@ -19,12 +19,12 @@ public class Help extends Command {
 	}
 
 	@Override
-	public String setName() {
+	public String getName() {
 		return "help";
 	}
 
 	@Override
-	public int setMinArgNumber() {
+	public int getMinArgNumber() {
 		return 0;
 	}
 
@@ -34,7 +34,7 @@ public class Help extends Command {
 	}
 
 	@Override
-	public String setPermission() {
+	public String getPermission() {
 		return "noob.help";
 	}
 

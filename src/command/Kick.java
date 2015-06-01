@@ -15,12 +15,12 @@ public class Kick extends Command {
 	}
 
 	@Override
-	public String setName() {
+	public String getName() {
 		return "kick";
 	}
 
 	@Override
-	public int setMinArgNumber() {
+	public int getMinArgNumber() {
 		return 1;
 	}
 
@@ -30,7 +30,7 @@ public class Kick extends Command {
 	}
 
 	@Override
-	public String setPermission() {
+	public String getPermission() {
 		return "server.kick";
 	}
 }

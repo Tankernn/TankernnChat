@@ -19,19 +19,19 @@ public class PrivateMessage extends Command {
 			return;
 		}
 		
-		Message mess = new Message("PM", caller.username, this.stringArrayToString(CommandHandler.removeFirst(args)));
+		Message mess = new Message("PM", caller.username, CommandHandler.stringArrayToString(CommandHandler.removeFirst(args)));
 		
 		reciever.send(mess); caller.send(mess);
 		
 	}
 
 	@Override
-	public String setName() {
+	public String getName() {
 		return "pm";
 	}
 
 	@Override
-	public String setPermission() {
+	public String getPermission() {
 		return "noob.pm";
 	}
 
@@ -41,7 +41,7 @@ public class PrivateMessage extends Command {
 	}
 
 	@Override
-	public int setMinArgNumber() {
+	public int getMinArgNumber() {
 		return 2;
 	}
 
