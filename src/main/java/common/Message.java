@@ -43,6 +43,10 @@ public class Message implements java.io.Serializable {
 		this.content = con;
 		this.preInfo = preInfo; 
 		this.messType = messType;
+		if (preInfo)
+			usersOnline = Server.getUsersOnline();
+		else
+			usersOnline = null;
 	}
 	
 	public boolean validate() {

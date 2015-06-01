@@ -101,7 +101,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		connect(adress, port, username);
 	}
 	
-	void send(String text) {
+	public void send(String text) {
 		if (so.isConnected() && !so.isClosed())
 			out.println(text);
 		else {
@@ -171,6 +171,9 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 			if (fromServer instanceof Message) {
 				Message mess = ((Message)fromServer);
 				chat.log(mess);
+				
+				if (mess.usersOnline == null)
+					continue;
 				
 				model = new DefaultListModel<String>();
 				for (String user: mess.usersOnline)
