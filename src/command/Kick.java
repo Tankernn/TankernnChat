@@ -1,5 +1,7 @@
 package command;
 
+import common.Message;
+import common.Message.MessageType;
 import server.Client;
 import server.Server;
 
@@ -10,7 +12,7 @@ public class Kick extends Command {
 		try {
 			Server.getUserByName(args[0]).disconnect(false);
 		} catch (NullPointerException ex) {
-			caller.send("No user called " + args[0] + "!");
+			caller.send(new Message("No user called " + args[0] + "!", MessageType.ERROR, false));
 		}
 	}
 

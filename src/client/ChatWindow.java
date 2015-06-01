@@ -23,6 +23,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import common.Message;
+import common.Message.MessageType;
 
 @SuppressWarnings("serial")
 public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyListener{
@@ -104,13 +105,13 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		if (so.isConnected() && !so.isClosed())
 			out.println(text);
 		else {
-			chat.log("Not connected to server!");
+			chat.log(new Message("Not connected to server!", MessageType.WARNING, false));
 			write.setEnabled(false);
 		}
 	}
 	
 	void connect(String address, int port, String username) {
-		chat.log("Connecting to " + address + " on port " + port + ".");
+		chat.log(new Message("Connecting to " + address + " on port " + port + ".", MessageType.INFO, false));
 		if (getMessages != null)
 			getMessages.interrupt();
 		
@@ -121,7 +122,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		} catch (NullPointerException ex) {
 			//Nothing
 		} catch (IOException ex) {
-			chat.log(ex.toString());
+			chat.log(new Message(ex.toString(), MessageType.ERROR, false));
 		}
 		
 		try {
@@ -130,10 +131,10 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 			objIn =		new ObjectInputStream(so.getInputStream());
 			out =		new PrintWriter(so.getOutputStream(), true);
 		} catch (SocketTimeoutException ex) {
-			chat.log("Could not connect to server. (Connection timed out!)");
+			chat.log(new Message("Could not connect to server. (Connection timed out!)", MessageType.ERROR, false));
 			return;
 		} catch (IOException e) {
-			chat.log(e.toString());
+			chat.log(new Message(e.toString(), MessageType.ERROR, false));
 			return;
 		}
 		
@@ -156,11 +157,11 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		try {
 			getMessages();
 		} catch (EOFException eof) {
-			chat.log(eof.toString() + " Disconnected from host.");
+			chat.log(new Message(eof.toString() + " Disconnected from host.", MessageType.ERROR, false));
 		} catch (ClassNotFoundException cnf) {
-			chat.log("The message recieved from the server could not be understood. Are you using the right version?");
+			chat.log(new Message("The message recieved from the server could not be understood. Are you using the right version?", MessageType.ERROR, false));
 		} catch (IOException e) {
-			chat.log(e.toString());
+			chat.log(new Message(e.toString(), MessageType.ERROR, false));
 		}
 	}
 	
@@ -172,12 +173,14 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 				chat.log(mess);
 				
 				model = new DefaultListModel<String>();
-				for (int i = 0; i < mess.usersOnline.length; i++)
-					model.addElement(mess.usersOnline[i]);
+				for (String user: mess.usersOnline)
+					model.addElement(user);
 				
 				userList.setModel(model);
+			} else if (fromServer instanceof String) {
+				chat.log(new Message((String)fromServer, MessageType.NORMAL, false));
 			} else
-				chat.log(fromServer.toString());
+				throw new ClassNotFoundException();
 		}
 	}
 

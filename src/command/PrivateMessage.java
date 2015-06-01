@@ -10,7 +10,7 @@ public class PrivateMessage extends Command {
 	@Override
 	public void execute(String[] args, Client caller) {
 		Client reciever = Server.getUserByName(args[0]);
-			
+
 		if (caller.equals(reciever)) {
 			caller.send("Please don't speak with yourself.");
 			return;
@@ -19,10 +19,10 @@ public class PrivateMessage extends Command {
 			return;
 		}
 		
-		Message mess = new Message("PM", caller.username, CommandHandler.stringArrayToString(CommandHandler.removeFirst(args)));
-		
+		Message mess = new Message("PM", caller.username, CommandHandler.stringArrayToString(CommandHandler.removeFirst(args)), Message.MessageType.PM);
+
 		reciever.send(mess); caller.send(mess);
-		
+
 	}
 
 	@Override
