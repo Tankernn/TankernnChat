@@ -162,7 +162,7 @@ public class Server {
 	}
 	
 	static void newPropertiesFile() {
-		System.out.println("Generating new preperties file.");
+		System.out.println("Generating new properties file.");
 		try {
 			new File("server.properties").createNewFile();
 			prop.setProperty("port", "25566");
