@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
 
 import common.Message;
 import server.CommandHandler;
@@ -70,7 +71,7 @@ public class Server {
 	}
 
 	static void getClients() {
-		while(true) {
+		while(!so.isClosed()) {
 			Client newClient = null;
 			try {
 				newClient = new Client(Server.so.accept());
@@ -82,6 +83,9 @@ public class Server {
 			} catch (ArrayIndexOutOfBoundsException ex) {
 				newClient.send(new Message("Server full!"));
 				newClient.disconnect(false);
+			} catch (IOException ex) {
+				if (so.isClosed())
+					return;
 			} catch (Exception ex) {
 				System.out.println("Could not get new client!");
 				ex.printStackTrace();
@@ -129,7 +133,17 @@ public class Server {
 		
 		log.close();
 		
-		System.exit(0);
+		OPClient.disconnect();
+		
+		try {
+			so.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+		for (Thread th: threadSet)
+			System.out.println(th.toString() + ", " + th.isAlive());
 	}
 	
 	public static int CInt(String str) {

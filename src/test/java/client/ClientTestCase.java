@@ -7,15 +7,21 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import server.Server;
-import server.ServerTestSuite;
 
 public class ClientTestCase {
 	public static ChatWindow user1;
 	public static ChatWindow user2;
-
+	
+	static Thread runServer = new Thread(){
+    	@Override
+    	public void run() {
+    		Server.main(new String[]{});
+    	}
+    };
+	
     @BeforeClass 
     public static void setUpClass() {
-    	ServerTestSuite.runServer.start();
+		runServer.start();
         user1 = new ChatWindow("localhost", 25566, "user1");
         assertTrue(user1.so.isConnected());
     }
