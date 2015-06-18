@@ -1,9 +1,10 @@
 package command;
 
-import common.Message;
-import common.Message.MessageType;
 import server.Client;
 import server.Server;
+
+import common.Message;
+import common.Message.MessageType;
 
 public class Kick extends Command {
 
@@ -12,7 +13,8 @@ public class Kick extends Command {
 		try {
 			Server.getUserByName(args[0]).disconnect(false);
 		} catch (NullPointerException ex) {
-			caller.send(new Message("No user called " + args[0] + "!", MessageType.ERROR, false));
+			caller.send(new Message("No user called " + args[0] + "!",
+					MessageType.ERROR, false));
 		}
 	}
 
@@ -27,7 +29,7 @@ public class Kick extends Command {
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Kicks a user. (/kick <username>)";
 	}
 

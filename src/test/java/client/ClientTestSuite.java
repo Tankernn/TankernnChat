@@ -6,4 +6,5 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(value = Suite.class)
 @SuiteClasses(value = { ClientTestCase.class })
-public class ClientTestSuite {}
+public class ClientTestSuite {
+}

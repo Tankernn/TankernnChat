@@ -3,7 +3,7 @@ package command;
 import server.Client;
 import server.Server;
 
-public class Exit extends Command{
+public class Exit extends Command {
 
 	@Override
 	public void execute(String[] args, Client caller) {
@@ -21,7 +21,7 @@ public class Exit extends Command{
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Exits the server.";
 	}
 

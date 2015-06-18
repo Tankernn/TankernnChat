@@ -8,12 +8,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.Scanner;
-import java.util.Set;
 
 import common.Message;
-import server.CommandHandler;
+import server.CommandRegistry;
 import server.Channel;
+import server.util.*;
 
 public class Server {
 	static Properties prop = new Properties();
@@ -27,6 +26,7 @@ public class Server {
 	static ServerSocket so;
 	public static LocalClient OPClient;
 	public static Logger log;
+	public static CommandRegistry commReg;
 	
 	public static void main(String[] arg){
 		System.out.println("Starting ChatServer version " + version + "...");
@@ -47,7 +47,7 @@ public class Server {
 		channels.add(new Channel("Main"));
 		
 		System.out.print("Starting commandhandler...");
-		new CommandHandler();
+		commReg = new CommandRegistry();
 		System.out.println("Done");
 		
 		System.out.print("Creating virtual local client...");
@@ -140,19 +140,9 @@ public class Server {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-		for (Thread th: threadSet)
-			System.out.println(th.toString() + ", " + th.isAlive());
 	}
 	
-	public static int CInt(String str) {
-		int i;
-		Scanner sc = new Scanner(str);
-		i = sc.nextInt();
-		sc.close();
-		return i;
-	}
+	
 	
 	static void loadProperties() {
 		System.out.println("Loadning properties file.");
@@ -167,8 +157,8 @@ public class Server {
 		
 		System.out.println("Reading numbers from properties object.");
 		try {
-			port = CInt(prop.getProperty("port"));
-			maxUsers = CInt(prop.getProperty("maxUsers"));
+			port = Numbers.CInt(prop.getProperty("port"));
+			maxUsers = Numbers.CInt(prop.getProperty("maxUsers"));
 		} catch (NullPointerException ex) {
 			System.out.println("Could not get values from properties file.");
 			newPropertiesFile();

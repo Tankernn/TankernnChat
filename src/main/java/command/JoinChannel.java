@@ -1,9 +1,10 @@
 package command;
 
-import common.Message;
-import common.Message.MessageType;
 import server.Client;
 import server.Server;
+
+import common.Message;
+import common.Message.MessageType;
 
 public class JoinChannel extends Command {
 
@@ -13,13 +14,15 @@ public class JoinChannel extends Command {
 			caller.send("Client-only command.");
 			return;
 		}
-		
+
 		try {
 			Server.getChannelByName(args[0]).add(caller);
 			caller.primaryChannel = Server.getChannelByName(args[0]);
-			caller.send(new Message("You are now speaking in channel " + args[0] + ".", MessageType.COMMAND, false));
+			caller.send(new Message("You are now speaking in channel "
+					+ args[0] + ".", MessageType.COMMAND, false));
 		} catch (NullPointerException ex) {
-			caller.send(new Message("No such channel!", MessageType.ERROR, false));
+			caller.send(new Message("No such channel!", MessageType.ERROR,
+					false));
 		}
 	}
 
@@ -34,7 +37,7 @@ public class JoinChannel extends Command {
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Sets specified channel as primary (/join <channel>)";
 	}
 

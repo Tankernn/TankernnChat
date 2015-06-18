@@ -1,20 +1,30 @@
 package command;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import server.Client;
+import server.Server;
+
 import common.Message;
 import common.Message.MessageType;
-import server.Client;
-import server.CommandHandler;
 
 public class Help extends Command {
 
 	@Override
 	public void execute(String[] args, Client caller) {
 		String help = "Help for all commands:" + "\n";
-		for (int i = 0; i < CommandHandler.commands.length; i++) {
-			help += CommandHandler.commands[i].getName() + ": ";
-			help += "\t";
-			help += CommandHandler.commands[i].writeDescription();
-			if (i + 1 < CommandHandler.commands.length)
+		Iterator<Entry<String, Command>> it = Server.commReg.entrySet()
+				.iterator();
+
+		while (it.hasNext()) {
+			Map.Entry<String, Command> pair = it
+					.next();
+
+			help += pair.getKey() + ": " + "\t"
+					+ pair.getValue().getDescription();
+			if (it.hasNext())
 				help += "\n";
 		}
 		caller.send(new Message(help, MessageType.COMMAND, false));
@@ -31,7 +41,7 @@ public class Help extends Command {
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Writes the descriptions for all commands.";
 	}
 
