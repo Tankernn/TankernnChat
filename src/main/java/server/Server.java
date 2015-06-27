@@ -3,7 +3,7 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Optional;
 
 import common.Message;
 import server.CommandRegistry;
@@ -28,12 +28,14 @@ public class Server {
 	public static void main(String[] arg){
 		System.out.println("Starting ChatServer version " + version + "...");
 		
-		System.out.println("Loadning properties file.");
+		System.out.print("Loadning properties file...");
 		prop.loadProperties();
+		System.out.println("Done");
 		
-		System.out.println("Reading numbers from properties object.");
+		System.out.print("Reading numbers from properties object...");
 		port = prop.getNumberProperty("port");
 		maxUsers = prop.getNumberProperty("maxUsers");
+		System.out.println("Done");
 		
 		System.out.print("Setting up socket...");
 		try {
@@ -95,13 +97,8 @@ public class Server {
 		}
 	}
 	
-	public static Channel getChannelByName(String name) throws NullPointerException {
-		for (int i = 0; i < channels.size(); i++) {
-			if (channels.get(i).name.equals(name)) {
-				return channels.get(i);
-			}
-		}
-		return null;
+	public static Optional<Channel> getChannelByName(String name) throws NullPointerException {
+		return channels.stream().filter(c -> c.name.equals(name)).findFirst();
 	}
 
 	public static void wideBroadcast(Message mess) {
@@ -116,21 +113,19 @@ public class Server {
 		return clients.listClients();
 	}
 
-	public static Client getUserByName(String username) {
+	public static Optional<Client> getUserByName(String username) {
 		return clients.getClientByName(username);
 	}
 	
 	public static void cleanUp() { //Makes sure the client gets removed from all arrays
 		clients.cleanUp();
-		for (Channel c: channels)
-			if (c != null)
-				c.cleanUp();
+		channels.forEach(c -> c.cleanUp());
 	}
 	
 	public static void exit() {
 		wideBroadcast(new Message("Shutting down server!"));
 		
-		for (int i = 0; i < clients.size(); i++)
+		for (int i = 0; i < clients.size(); i++) //Has to be done with number iteration, otherwise unsafe
 			clients.get(i).disconnect();
 		
 		log.close();
@@ -142,9 +137,5 @@ public class Server {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-		for (Thread th: threadSet)
-			System.out.println(th.toString() + ", " + th.isAlive());
 	}
 }

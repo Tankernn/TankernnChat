@@ -1,7 +1,9 @@
 package command;
 
 import java.util.InputMismatchException;
+import java.util.Optional;
 
+import common.Command;
 import common.Message;
 import common.Message.MessageType;
 import server.Client;
@@ -18,20 +20,21 @@ public class Ban extends Command {
 		int duration = -1;
 		Client victim;
 		
-		try {
-			victim = Server.getUserByName(args[0]);
-		}	catch (NullPointerException e) {
-			caller.send(new Message("No such user!", MessageType.WARNING, false));
+		Optional<Client> maybeVictim = Server.getUserByName(args[0]);
+		
+		if (maybeVictim.isPresent())
+			victim = maybeVictim.get();
+		else {
+			caller.send(new Message("No user called " + args[0] + ".", MessageType.ERROR, false));
 			return;
 		}
+		
 		
 		IP = victim.sock.getInetAddress().toString();
 		
 		BanNote bn = new BanNote(IP);
 		
-		if (args.length == 1)
-			bn = new BanNote(IP);
-		else
+		if (args.length != 1)
 			try {
 				duration = Numbers.CInt(args[1]);
 				
@@ -44,7 +47,6 @@ public class Ban extends Command {
 			}
 		
 		Server.banNotes.add(bn);
-		victim.disconnect(false);
 	}
 
 	@Override

@@ -1,10 +1,11 @@
 package server;
 
 import java.util.HashMap;
+import java.util.List;
 
+import util.ClassFinder;
 import util.StringArrays;
-
-import command.Command;
+import common.Command;
 
 public class CommandRegistry extends HashMap<String, Command> {
 
@@ -14,19 +15,16 @@ public class CommandRegistry extends HashMap<String, Command> {
 	private static final long serialVersionUID = 1L;
 
 	public CommandRegistry() {
-		Command[] commands = new Command[9];
-		commands[0] = new command.Kick();
-		commands[1] = new command.List();
-		commands[2] = new command.Exit();
-		commands[3] = new command.Help();
-		commands[4] = new command.PrivateMessage();
-		commands[5] = new command.JoinChannel();
-		commands[6] = new command.Ban();
-		commands[7] = new command.LeaveChannel();
-		commands[8] = new command.CreateChannel();
-
-		for (Command comm : commands)
-			put(comm.getName(), comm);
+		List<Class<?>> classes = ClassFinder.find("command");
+		
+		for (Class<?> comm: classes) {
+			try {
+				Command commInstance = (Command) comm.newInstance();
+				put(commInstance.getName(), commInstance);
+			} catch (ClassCastException | InstantiationException | IllegalAccessException ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 
 	public void executeCommand(String[] command, Client caller) {

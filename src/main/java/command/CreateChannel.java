@@ -1,7 +1,7 @@
 package command;
 
+import common.Command;
 import common.Message;
-
 import server.Client;
 import server.Server;
 

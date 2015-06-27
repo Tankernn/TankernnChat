@@ -1,6 +1,10 @@
 package command;
 
+import java.util.Optional;
+
+import common.Command;
 import common.Message;
+import common.Message.MessageType;
 import server.Client;
 import server.Server;
 import util.StringArrays;
@@ -9,8 +13,15 @@ public class PrivateMessage extends Command {
 
 	@Override
 	public void execute(String[] args, Client caller) {
-		Client reciever = Server.getUserByName(args[0]);
-
+		Client reciever;
+		Optional<Client> maybeVictim = Server.getUserByName(args[0]);
+		
+		if (maybeVictim.isPresent())
+			reciever = maybeVictim.get();
+		else {
+			caller.send(new Message("No user called " + args[0] + ".", MessageType.ERROR, false));
+			return;
+		}
 		if (caller.equals(reciever)) {
 			caller.send("Please don't speak with yourself.");
 			return;

@@ -1,7 +1,11 @@
 package command;
 
+import java.util.Optional;
+
+import common.Command;
 import common.Message;
 import common.Message.MessageType;
+import server.Channel;
 import server.Client;
 import server.Server;
 
@@ -14,9 +18,12 @@ public class JoinChannel extends Command {
 			return;
 		}
 		
+		Optional<Channel> maybeChannel = Server.getChannelByName(args[0]);
+		Channel selectedChannel = maybeChannel.isPresent()? maybeChannel.get() : null;
+		
 		try {
-			Server.getChannelByName(args[0]).add(caller);
-			caller.primaryChannel = Server.getChannelByName(args[0]);
+			selectedChannel.add(caller);
+			caller.primaryChannel = selectedChannel;
 			caller.send(new Message("You are now speaking in channel " + args[0] + ".", MessageType.COMMAND, false));
 		} catch (NullPointerException ex) {
 			caller.send(new Message("No such channel!", MessageType.ERROR, false));

@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import common.Command;
 import common.Message;
 import common.Message.MessageType;
 import server.Client;

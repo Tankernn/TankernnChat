@@ -1,7 +1,11 @@
 package command;
 
+import java.util.Optional;
+
+import common.Command;
 import common.Message;
 import common.Message.MessageType;
+import server.Channel;
 import server.Client;
 import server.Server;
 
@@ -14,9 +18,12 @@ public class LeaveChannel extends Command{
 			return;
 		}
 		
+		Optional<Channel> maybeChannel = Server.getChannelByName(args[0]);
+		Channel selectedChannel = maybeChannel.isPresent()? maybeChannel.get() : null;
+		
 		try {
-			Server.getChannelByName(args[0]).remove(caller);
-			if (caller.primaryChannel.equals(Server.getChannelByName(args[0])))
+			selectedChannel.remove(caller);
+			if (caller.primaryChannel.equals(selectedChannel))
 				caller.primaryChannel = Server.channels.get(0);
 			caller.send(new Message("You left channel " + args[0] + ".", MessageType.COMMAND, false));
 			caller.send(new Message("You are now speaking in channel " + caller.primaryChannel.name + ".", MessageType.COMMAND, false));

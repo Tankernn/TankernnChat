@@ -1,6 +1,7 @@
 package server;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import common.Message;
 
@@ -21,12 +22,10 @@ public class ClientCollection extends ArrayList<Client>{
 		maxClients = maxUsers;
 	}
 	
-	public Client getClientByName(String name) throws NullPointerException {
-		for (Client c: this) {
-			if (c.username.equals(name))
-				return c;
-		}
-		return null;
+	public Optional<Client> getClientByName(String name) {
+		return stream()
+				.filter(c -> c.username.equals(name))
+				.findFirst();
 	}
 	
 	void broadcast(Message mess) { //Broadcast to all
@@ -67,7 +66,7 @@ public class ClientCollection extends ArrayList<Client>{
 		return listClients().split("\n");
 	}
 	
-	public void cleanUp() { //Remove unused clients
+	public void cleanUp() { //Remove unused clients, has to be done with number iteration, otherwise unsafe
 		for (int i = 0; i < size(); i++)
 			if (!get(i).isConnected())
 				remove(i);

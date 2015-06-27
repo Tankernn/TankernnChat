@@ -1,7 +1,11 @@
 package command;
 
+import java.util.Optional;
+
+import common.Command;
 import common.Message;
 import common.Message.MessageType;
+import server.Channel;
 import server.Client;
 import server.Server;
 
@@ -12,9 +16,11 @@ public class List extends Command {
 		String arr, channelName = null;
 		
 		if (args.length >= 1) {
-			channelName = args[0];
+			Optional<Channel> maybeChannel = Server.getChannelByName(args[0]);
+			Channel selectedChannel = maybeChannel.isPresent()? maybeChannel.get() : null;
 			try {
-				arr = Server.getChannelByName(channelName).listClients();
+				arr = selectedChannel.listClients();
+				channelName = selectedChannel.name;
 			} catch (NullPointerException ex) {
 				caller.send(new Message("No channel named " + channelName + ".", MessageType.ERROR, false));
 				return;

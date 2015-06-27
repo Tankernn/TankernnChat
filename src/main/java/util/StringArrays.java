@@ -1,14 +1,12 @@
 package util;
 
-import java.util.ArrayList;
-
 public class StringArrays {
 	public static String[] removeFirst(String[] oldArr) {
-		ArrayList<String> newArr = new ArrayList<String>();
+		String[] newArr = new String[oldArr.length -1];
 		for (int i = 1; i < oldArr.length; i++) {
-			newArr.add(oldArr[i]);
+			newArr[i -1] = oldArr[i];
 		}
-		return (String[]) newArr.toArray();
+		return newArr;
 	}
 
 	public static String arrayToString(String[] arr) {

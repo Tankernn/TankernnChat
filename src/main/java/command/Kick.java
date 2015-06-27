@@ -1,5 +1,8 @@
 package command;
 
+import java.util.Optional;
+
+import common.Command;
 import common.Message;
 import common.Message.MessageType;
 import server.Client;
@@ -9,8 +12,10 @@ public class Kick extends Command {
 
 	@Override
 	public void execute(String[] args, Client caller) {
+		Optional<Client> maybeVictim = Server.getUserByName(args[0]);
+		
 		try {
-			Server.getUserByName(args[0]).disconnect(false);
+			maybeVictim.orElseThrow(NullPointerException::new).disconnect(false);
 		} catch (NullPointerException ex) {
 			caller.send(new Message("No user called " + args[0] + "!", MessageType.ERROR, false));
 		}

@@ -64,27 +64,25 @@ public class Client implements Runnable, ActionListener {
 		}
 		
 		//Not same username as anyone else
-		if (Server.clients.getClientByName(username) != null) {
+		if (Server.clients.getClientByName(username).isPresent()) {
 			send("Username already taken!");
 			return false;
 		}
 			
 		//No connect if banned
-		for (int i = 0; i < Server.banNotes.size(); i++)
-			if (Server.banNotes.get(i).ip.equals(sock.getInetAddress().toString())) {
-				BanNote bn = Server.banNotes.get(i);
-				if (bn.expiry == null) {
-					send(bn.toString());
+		for (BanNote note: Server.banNotes)
+			if (note.ip.equals(sock.getInetAddress().toString())) {
+				if (note.expiry == null) {
+					send(note.toString());
 					return false;
-				} else if (bn.expiry.isBefore(LocalDateTime.now())) {
-					Server.banNotes.remove(i);
+				} else if (note.expiry.isBefore(LocalDateTime.now())) {
+					Server.banNotes.remove(note);
 					return true;
 				} else {
-					send(bn.toString());
+					send(note.toString());
 					return false;
 				}
 			}
-		
 		return true;
 	}
 	
@@ -157,7 +155,8 @@ public class Client implements Runnable, ActionListener {
 			objOut.writeObject(message);
 			objOut.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			if (isConnected())
+				disconnect();
 		}
 	}
 	
