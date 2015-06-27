@@ -1,22 +1,18 @@
 package server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.Properties;
-import java.util.Scanner;
 import java.util.Set;
 
 import common.Message;
-import server.CommandHandler;
+import server.CommandRegistry;
 import server.Channel;
+import util.Logger;
+import util.ServerProperties;
 
 public class Server {
-	static Properties prop = new Properties();
+	static ServerProperties prop = new ServerProperties();
 	static int port, maxUsers;
 	static final String version = "0.3";
 	
@@ -27,11 +23,17 @@ public class Server {
 	static ServerSocket so;
 	public static LocalClient OPClient;
 	public static Logger log;
+	public static CommandRegistry commReg;
 	
 	public static void main(String[] arg){
 		System.out.println("Starting ChatServer version " + version + "...");
 		
-		loadProperties();
+		System.out.println("Loadning properties file.");
+		prop.loadProperties();
+		
+		System.out.println("Reading numbers from properties object.");
+		port = prop.getNumberProperty("port");
+		maxUsers = prop.getNumberProperty("maxUsers");
 		
 		System.out.print("Setting up socket...");
 		try {
@@ -47,7 +49,7 @@ public class Server {
 		channels.add(new Channel("Main"));
 		
 		System.out.print("Starting commandhandler...");
-		new CommandHandler();
+		commReg = new CommandRegistry();
 		System.out.println("Done");
 		
 		System.out.print("Creating virtual local client...");
@@ -144,46 +146,5 @@ public class Server {
 		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
 		for (Thread th: threadSet)
 			System.out.println(th.toString() + ", " + th.isAlive());
-	}
-	
-	public static int CInt(String str) {
-		int i;
-		Scanner sc = new Scanner(str);
-		i = sc.nextInt();
-		sc.close();
-		return i;
-	}
-	
-	static void loadProperties() {
-		System.out.println("Loadning properties file.");
-		try {
-			prop.load(new FileInputStream("server.properties"));
-		} catch (FileNotFoundException e1) {
-			newPropertiesFile();
-		} catch (IOException e2) {
-			System.out.println("Could not load properties.");
-			e2.printStackTrace();
-		}
-		
-		System.out.println("Reading numbers from properties object.");
-		try {
-			port = CInt(prop.getProperty("port"));
-			maxUsers = CInt(prop.getProperty("maxUsers"));
-		} catch (NullPointerException ex) {
-			System.out.println("Could not get values from properties file.");
-			newPropertiesFile();
-		}
-	}
-	
-	static void newPropertiesFile() {
-		System.out.println("Generating new properties file.");
-		try {
-			new File("server.properties").createNewFile();
-			prop.setProperty("port", "25566");
-			prop.setProperty("maxUsers", "20");
-			prop.store(new FileWriter("server.properties"), "ChatServer config file");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }

@@ -39,7 +39,7 @@ public class List extends Command {
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Lists all users online. (/list [channel])";
 	}
 

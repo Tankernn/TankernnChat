@@ -37,7 +37,7 @@ public class LeaveChannel extends Command{
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Removes caller from specified channel. (/leave <channel>)";
 	}
 

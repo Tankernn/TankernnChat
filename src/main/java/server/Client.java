@@ -134,7 +134,7 @@ public class Client implements Runnable, ActionListener {
 				if (lastMess.startsWith("/")) //Command handling
 				{
 					String[] commandarray = lastMess.substring(1).split(" ");
-					CommandHandler.executeCommand(commandarray, this);
+					Server.commReg.executeCommand(commandarray, this);
 				}
 				else //Normal message handling
 				{

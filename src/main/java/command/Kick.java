@@ -27,7 +27,7 @@ public class Kick extends Command {
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Kicks a user. (/kick <username>)";
 	}
 

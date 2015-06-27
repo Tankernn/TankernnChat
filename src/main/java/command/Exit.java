@@ -21,7 +21,7 @@ public class Exit extends Command{
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Exits the server.";
 	}
 

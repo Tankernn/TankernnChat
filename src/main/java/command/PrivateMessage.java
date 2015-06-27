@@ -2,8 +2,8 @@ package command;
 
 import common.Message;
 import server.Client;
-import server.CommandHandler;
 import server.Server;
+import util.StringArrays;
 
 public class PrivateMessage extends Command {
 
@@ -19,7 +19,7 @@ public class PrivateMessage extends Command {
 			return;
 		}
 		
-		Message mess = new Message("PM", caller.username, CommandHandler.stringArrayToString(CommandHandler.removeFirst(args)), Message.MessageType.PM);
+		Message mess = new Message("PM", caller.username, StringArrays.arrayToString(StringArrays.removeFirst(args)), Message.MessageType.PM);
 
 		reciever.send(mess); caller.send(mess);
 
@@ -36,7 +36,7 @@ public class PrivateMessage extends Command {
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Sends a private message to a user";
 	}
 

@@ -6,6 +6,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import util.Numbers;
+
 public class ServerTestCase {
 	
 	@BeforeClass 
@@ -15,7 +17,7 @@ public class ServerTestCase {
 	
 	@Test
 	public void testCInt() {
-		assertEquals(Server.CInt("832"), 832);
+		assertEquals(Numbers.CInt("832"), 832);
 	}
 	
 	@AfterClass

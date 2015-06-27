@@ -25,7 +25,7 @@ public class CreateChannel extends Command{
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Creates a channel with specified settings. (/createchannel <name>)";
 	}
 

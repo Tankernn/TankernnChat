@@ -34,7 +34,7 @@ public class JoinChannel extends Command {
 	}
 
 	@Override
-	public String writeDescription() {
+	public String getDescription() {
 		return "Sets specified channel as primary (/join <channel>)";
 	}
 
