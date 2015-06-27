@@ -16,8 +16,8 @@ import javax.swing.JTextField;
 public class ChatClient {
 	static Properties prop = new Properties();
 	static File confFile = new File("client.properties");
-
-	public static void main(String[] arg) {
+	
+	public static void main (String[] arg) {
 		try {
 			prop.load(new FileInputStream(confFile));
 		} catch (FileNotFoundException e) {
@@ -27,24 +27,25 @@ public class ChatClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		
 		JTextField hostBox = new JTextField(prop.getProperty("host"));
 		JTextField portBox = new JTextField(prop.getProperty("port"));
 		JTextField userBox = new JTextField(prop.getProperty("username"));
-		final JComponent[] inputs = new JComponent[] { new JLabel("Host:"),
-				hostBox, new JLabel("Port:"), portBox, new JLabel("Username:"),
-				userBox };
-
+		final JComponent[] inputs = new JComponent[] {
+				new JLabel("Host:"), hostBox,
+				new JLabel("Port:"), portBox,
+				new JLabel("Username:"), userBox
+		};
+		
 		String host, username, portString;
-
-		JOptionPane.showMessageDialog(null, inputs, "Chat settings",
-				JOptionPane.PLAIN_MESSAGE);
-
+		
+		JOptionPane.showMessageDialog(null, inputs, "Chat settings", JOptionPane.PLAIN_MESSAGE);
+		
 		host = hostBox.getText();
 		prop.setProperty("host", host);
 		username = userBox.getText();
 		prop.setProperty("username", username);
-
+		
 		portString = portBox.getText();
 		Scanner sc = new Scanner(portString);
 		int port = sc.nextInt();
@@ -52,16 +53,15 @@ public class ChatClient {
 		prop.setProperty("port", portString);
 
 		writeConfFile();
-
+		
 		new ChatWindow(host, port, username);
 	}
-
+	
 	static void writeConfFile() {
 		try {
 			if (!confFile.exists())
 				confFile.createNewFile();
-			prop.store(new FileOutputStream(confFile),
-					"Configuration for chat client");
+			prop.store(new FileOutputStream(confFile), "Configuration for chat client");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
