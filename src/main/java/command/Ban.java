@@ -3,17 +3,18 @@ package command;
 import java.util.InputMismatchException;
 import java.util.Optional;
 
-import common.Command;
-import common.Message;
-import common.Message.MessageType;
+import server.BanNote;
 import server.Client;
 import server.Server;
-import server.BanNote;
 import util.Numbers;
 import util.StringArrays;
 
-public class Ban extends Command {
+import common.Command;
+import common.Message;
+import common.Message.MessageType;
 
+public class Ban extends Command {
+	
 	@Override
 	public void execute(String[] args, Client caller) {
 		String IP = null;
@@ -28,7 +29,6 @@ public class Ban extends Command {
 			caller.send(new Message("No user called " + args[0] + ".", MessageType.ERROR, false));
 			return;
 		}
-		
 		
 		IP = victim.sock.getInetAddress().toString();
 		
@@ -48,25 +48,25 @@ public class Ban extends Command {
 		
 		Server.banNotes.add(bn);
 	}
-
+	
 	@Override
 	public String getName() {
 		return "ban";
 	}
-
+	
 	@Override
 	public String getPermission() {
 		return "server.ban";
 	}
-
+	
 	@Override
 	public String getDescription() {
 		return "Bans a user. (/ban <username> [seconds] [reason])";
 	}
-
+	
 	@Override
 	public int getMinArgNumber() {
 		return 1;
 	}
-
+	
 }

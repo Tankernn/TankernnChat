@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalDateTime;
+
 import javax.swing.Timer;
 
 import common.Message;
@@ -58,7 +59,7 @@ public class Client implements Runnable, ActionListener {
 	
 	private boolean validateUser() {
 		//No spaces
-		if (username.contains(" ")){
+		if (username.contains(" ")) {
 			send("No spaces in usernames please!");
 			return false;
 		}
@@ -68,7 +69,7 @@ public class Client implements Runnable, ActionListener {
 			send("Username already taken!");
 			return false;
 		}
-			
+		
 		//No connect if banned
 		for (BanNote note: Server.banNotes)
 			if (note.ip.equals(sock.getInetAddress().toString())) {
@@ -123,7 +124,7 @@ public class Client implements Runnable, ActionListener {
 		}
 		return false;
 	}
-
+	
 	@Override
 	public void run() {
 		String lastMess;
@@ -164,7 +165,7 @@ public class Client implements Runnable, ActionListener {
 	public String toString() {
 		return username;
 	}
-
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		messLastPeriod = 0;

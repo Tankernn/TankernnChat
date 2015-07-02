@@ -2,15 +2,16 @@ package command;
 
 import java.util.Optional;
 
-import common.Command;
-import common.Message;
-import common.Message.MessageType;
 import server.Channel;
 import server.Client;
 import server.Server;
 
-public class JoinChannel extends Command {
+import common.Command;
+import common.Message;
+import common.Message.MessageType;
 
+public class JoinChannel extends Command {
+	
 	@Override
 	public void execute(String[] args, Client caller) {
 		if (caller.equals(Server.OPClient)) {
@@ -19,7 +20,7 @@ public class JoinChannel extends Command {
 		}
 		
 		Optional<Channel> maybeChannel = Server.getChannelByName(args[0]);
-		Channel selectedChannel = maybeChannel.isPresent()? maybeChannel.get() : null;
+		Channel selectedChannel = maybeChannel.isPresent() ? maybeChannel.get() : null;
 		
 		try {
 			selectedChannel.add(caller);
@@ -29,25 +30,25 @@ public class JoinChannel extends Command {
 			caller.send(new Message("No such channel!", MessageType.ERROR, false));
 		}
 	}
-
+	
 	@Override
 	public String getName() {
 		return "join";
 	}
-
+	
 	@Override
 	public String getPermission() {
 		return "noob.channel";
 	}
-
+	
 	@Override
 	public String getDescription() {
 		return "Sets specified channel as primary (/join <channel>)";
 	}
-
+	
 	@Override
 	public int getMinArgNumber() {
 		return 1;
 	}
-
+	
 }

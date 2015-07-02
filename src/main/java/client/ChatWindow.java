@@ -19,14 +19,23 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 import common.Message;
 import common.Message.MessageType;
 
 @SuppressWarnings("serial")
-public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyListener{
+public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyListener {
 	Thread getMessages;
 	static File confFile = new File("client.properties");
 	
@@ -69,17 +78,19 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		con.gridx = 0;
 		
 		right.add(lblUsersOnline, con);
-
+		
 		con.weighty = 1;
 		con.fill = GridBagConstraints.BOTH;
 		right.add(userList, con);
-
+		
 		con.weighty = 0;
 		con.fill = GridBagConstraints.HORIZONTAL;
 		right.add(reconnect, con);
 		
 		setLayout(new BorderLayout());
-		add(chat, BorderLayout.NORTH); add(write, BorderLayout.SOUTH); add(right, BorderLayout.EAST);
+		add(chat, BorderLayout.NORTH);
+		add(write, BorderLayout.SOUTH);
+		add(right, BorderLayout.EAST);
 		
 		//Scrollbar config
 		add(scroll);
@@ -128,8 +139,8 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		try {
 			so = new Socket();
 			so.connect(new InetSocketAddress(address, port), 1000);
-			objIn =		new ObjectInputStream(so.getInputStream());
-			out =		new PrintWriter(so.getOutputStream(), true);
+			objIn = new ObjectInputStream(so.getInputStream());
+			out = new PrintWriter(so.getOutputStream(), true);
 		} catch (SocketTimeoutException ex) {
 			chat.log(new Message("Could not connect to server. (Connection timed out!)", MessageType.ERROR, false));
 			return;
@@ -151,7 +162,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		if (e.getSource() == reconnect)
 			connect(adress, port, username);
 	}
-
+	
 	@Override
 	public void run() {
 		try {
@@ -166,10 +177,10 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 	}
 	
 	public void getMessages() throws IOException, ClassNotFoundException {
-		while(!getMessages.isInterrupted()) {
+		while (!getMessages.isInterrupted()) {
 			Object fromServer = objIn.readObject();
 			if (fromServer instanceof Message) {
-				Message mess = ((Message)fromServer);
+				Message mess = ((Message) fromServer);
 				chat.log(mess);
 				
 				if (mess.usersOnline == null)
@@ -181,46 +192,46 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 				
 				userList.setModel(model);
 			} else if (fromServer instanceof String) {
-				chat.log(new Message((String)fromServer, MessageType.NORMAL, false));
+				chat.log(new Message((String) fromServer, MessageType.NORMAL, false));
 			} else
 				throw new ClassNotFoundException();
 		}
 	}
-
+	
 	@Override
 	public void keyPressed(KeyEvent eKey) {
 		int keyCode = eKey.getKeyCode();
-		 switch( keyCode ) {
-	        case KeyEvent.VK_UP:
-	        	if (messIndex > 0)
-	        		messIndex--;
-	        	if (!lastMess.isEmpty())
-	        		write.setText(lastMess.get(messIndex));
-	            break;
-	        case KeyEvent.VK_DOWN:
-	        	if (messIndex <= lastMess.size())
-	        		messIndex++;
-	        	if (messIndex >= lastMess.size()) {
-	        		messIndex = lastMess.size();
-	        		write.setText("");
-	        	} else
-	        		write.setText(lastMess.get(messIndex));
-	            break;
-	        case KeyEvent.VK_ENTER:
-	        	String text = write.getText().trim();
-	    		if (!text.equals("")) {
-	    			send(text);
-	    			lastMess.add(text);
-	    			messIndex = lastMess.size();
-	    			write.setText("");
-	    		}
-	        	break;
-	     }
+		switch (keyCode) {
+		case KeyEvent.VK_UP:
+			if (messIndex > 0)
+				messIndex--;
+			if (!lastMess.isEmpty())
+				write.setText(lastMess.get(messIndex));
+			break;
+		case KeyEvent.VK_DOWN:
+			if (messIndex <= lastMess.size())
+				messIndex++;
+			if (messIndex >= lastMess.size()) {
+				messIndex = lastMess.size();
+				write.setText("");
+			} else
+				write.setText(lastMess.get(messIndex));
+			break;
+		case KeyEvent.VK_ENTER:
+			String text = write.getText().trim();
+			if (!text.equals("")) {
+				send(text);
+				lastMess.add(text);
+				messIndex = lastMess.size();
+				write.setText("");
+			}
+			break;
+		}
 	}
-
+	
 	@Override
 	public void keyReleased(KeyEvent arg0) {}
-
+	
 	@Override
 	public void keyTyped(KeyEvent arg0) {}
 }

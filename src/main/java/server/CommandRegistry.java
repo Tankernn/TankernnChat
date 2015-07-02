@@ -5,15 +5,16 @@ import java.util.List;
 
 import util.ClassFinder;
 import util.StringArrays;
+
 import common.Command;
 
 public class CommandRegistry extends HashMap<String, Command> {
-
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
+	
 	public CommandRegistry() {
 		List<Class<?>> classes = ClassFinder.find("command");
 		
@@ -26,7 +27,7 @@ public class CommandRegistry extends HashMap<String, Command> {
 			}
 		}
 	}
-
+	
 	public void executeCommand(String[] command, Client caller) {
 		Command comm;
 		if ((comm = get(command[0])) != null) // Get the command
@@ -51,5 +52,5 @@ public class CommandRegistry extends HashMap<String, Command> {
 		else
 			caller.send("No such command! Type '/help' for a list of commands.");
 	}
-
+	
 }

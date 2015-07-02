@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import common.Message;
 
-public class ClientCollection extends ArrayList<Client>{
+public class ClientCollection extends ArrayList<Client> {
 	/**
 	 * 
 	 */
@@ -29,7 +29,7 @@ public class ClientCollection extends ArrayList<Client>{
 	}
 	
 	void broadcast(Message mess) { //Broadcast to all
-		 if (mess.validate()) {
+		if (mess.validate()) {
 			for (Client c: this)
 				c.send(mess);
 			Server.OPClient.send(mess.toString());

@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class ServerProperties extends java.util.Properties{
+public class ServerProperties extends java.util.Properties {
 	/**
 	 * 
 	 */

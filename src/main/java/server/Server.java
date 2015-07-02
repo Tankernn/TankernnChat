@@ -5,11 +5,10 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import common.Message;
-import server.CommandRegistry;
-import server.Channel;
 import util.Logger;
 import util.ServerProperties;
+
+import common.Message;
 
 public class Server {
 	static ServerProperties prop = new ServerProperties();
@@ -25,7 +24,7 @@ public class Server {
 	public static Logger log;
 	public static CommandRegistry commReg;
 	
-	public static void main(String[] arg){
+	public static void main(String[] arg) {
 		System.out.println("Starting ChatServer version " + version + "...");
 		
 		System.out.print("Loadning properties file...");
@@ -40,7 +39,7 @@ public class Server {
 		System.out.print("Setting up socket...");
 		try {
 			so = new ServerSocket(port);
-		} catch(IOException ex) {
+		} catch (IOException ex) {
 			System.out.println("Error setting up socket. Server already running?");
 			System.exit(0);
 		}
@@ -73,9 +72,9 @@ public class Server {
 		
 		getClients();
 	}
-
+	
 	static void getClients() {
-		while(!so.isClosed()) {
+		while (!so.isClosed()) {
 			Client newClient = null;
 			try {
 				newClient = new Client(Server.so.accept());
@@ -100,11 +99,11 @@ public class Server {
 	public static Optional<Channel> getChannelByName(String name) throws NullPointerException {
 		return channels.stream().filter(c -> c.name.equals(name)).findFirst();
 	}
-
+	
 	public static void wideBroadcast(Message mess) {
 		clients.broadcast(mess);
 	}
-
+	
 	public static String[] getUsersOnline() {
 		return clients.listClientsArray();
 	}
@@ -112,7 +111,7 @@ public class Server {
 	public static String listClients() {
 		return clients.listClients();
 	}
-
+	
 	public static Optional<Client> getUserByName(String username) {
 		return clients.getClientByName(username);
 	}
@@ -125,7 +124,8 @@ public class Server {
 	public static void exit() {
 		wideBroadcast(new Message("Shutting down server!"));
 		
-		for (int i = 0; i < clients.size(); i++) //Has to be done with number iteration, otherwise unsafe
+		for (int i = 0; i < clients.size(); i++)
+			//Has to be done with number iteration, otherwise unsafe
 			clients.get(i).disconnect();
 		
 		log.close();

@@ -17,7 +17,7 @@ public class ChatClient {
 	static Properties prop = new Properties();
 	static File confFile = new File("client.properties");
 	
-	public static void main (String[] arg) {
+	public static void main(String[] arg) {
 		try {
 			prop.load(new FileInputStream(confFile));
 		} catch (FileNotFoundException e) {
@@ -51,7 +51,7 @@ public class ChatClient {
 		int port = sc.nextInt();
 		sc.close();
 		prop.setProperty("port", portString);
-
+		
 		writeConfFile();
 		
 		new ChatWindow(host, port, username);

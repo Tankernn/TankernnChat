@@ -1,6 +1,6 @@
 package server;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -10,10 +10,10 @@ import util.Numbers;
 
 public class ServerTestCase {
 	
-	@BeforeClass 
-    public static void setUpClass() {
-    	ServerTestSuite.runServer.start();
-    }
+	@BeforeClass
+	public static void setUpClass() {
+		ServerTestSuite.runServer.start();
+	}
 	
 	@Test
 	public void testCInt() {

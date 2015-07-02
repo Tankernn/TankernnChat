@@ -1,35 +1,35 @@
 package command;
 
-import common.Command;
-
 import server.Client;
 import server.Server;
 
-public class Exit extends Command{
+import common.Command;
 
+public class Exit extends Command {
+	
 	@Override
 	public void execute(String[] args, Client caller) {
 		Server.exit();
 	}
-
+	
 	@Override
 	public String getName() {
 		return "exit";
 	}
-
+	
 	@Override
 	public int getMinArgNumber() {
 		return 0;
 	}
-
+	
 	@Override
 	public String getDescription() {
 		return "Exits the server.";
 	}
-
+	
 	@Override
 	public String getPermission() {
 		return "server.exit";
 	}
-
+	
 }

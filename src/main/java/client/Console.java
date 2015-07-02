@@ -1,7 +1,9 @@
 package client;
 
-import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyledDocument;
 
 import common.Message;
 
@@ -30,8 +32,8 @@ public class Console extends JTextPane {
 		@Override
 		public synchronized void run() {
 			try {
-			    doc.insertString(doc.getLength(), text + "\n", style);
-			} catch(Exception e) {
+				doc.insertString(doc.getLength(), text + "\n", style);
+			} catch (Exception e) {
 				System.out.println(e);
 			}
 		}

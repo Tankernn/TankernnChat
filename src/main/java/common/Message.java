@@ -41,7 +41,7 @@ public class Message implements java.io.Serializable {
 	
 	public Message(String con, MessageType messType, boolean preInfo) { //TODO Needs to include Server.getUsersOnline() to prevent NullPointerException
 		this.content = con;
-		this.preInfo = preInfo; 
+		this.preInfo = preInfo;
 		this.messType = messType;
 		if (preInfo)
 			usersOnline = Server.getUsersOnline();
@@ -78,7 +78,7 @@ public class Message implements java.io.Serializable {
 			break;
 		default:
 			break;
-		}	
+		}
 		
 		DateFormat dateFormat = new SimpleDateFormat("[HH:mm:ss]");
 		Date time = new Date();

@@ -2,15 +2,16 @@ package command;
 
 import java.util.Optional;
 
-import common.Command;
-import common.Message;
-import common.Message.MessageType;
 import server.Client;
 import server.Server;
 import util.StringArrays;
 
-public class PrivateMessage extends Command {
+import common.Command;
+import common.Message;
+import common.Message.MessageType;
 
+public class PrivateMessage extends Command {
+	
 	@Override
 	public void execute(String[] args, Client caller) {
 		Client reciever;
@@ -31,29 +32,30 @@ public class PrivateMessage extends Command {
 		}
 		
 		Message mess = new Message("PM", caller.username, StringArrays.arrayToString(StringArrays.removeFirst(args)), Message.MessageType.PM);
-
-		reciever.send(mess); caller.send(mess);
-
+		
+		reciever.send(mess);
+		caller.send(mess);
+		
 	}
-
+	
 	@Override
 	public String getName() {
 		return "pm";
 	}
-
+	
 	@Override
 	public String getPermission() {
 		return "noob.pm";
 	}
-
+	
 	@Override
 	public String getDescription() {
 		return "Sends a private message to a user";
 	}
-
+	
 	@Override
 	public int getMinArgNumber() {
 		return 2;
 	}
-
+	
 }
