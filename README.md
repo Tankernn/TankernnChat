@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Tankernn/TankernnChat.svg?branch=master)](https://travis-ci.org/Tankernn/TankernnChat)[![codecov.io](http://codecov.io/github/Tankernn/TankernnChat/coverage.svg?branch=master)](http://codecov.io/github/Tankernn/TankernnChat?branch=master)
+
 # TankernnChat
 A chat server and client pair
 
