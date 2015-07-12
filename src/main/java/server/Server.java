@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import util.Logger;
 import util.ServerProperties;
-
 import common.MessagePacket;
 
 public class Server {
@@ -50,7 +49,7 @@ public class Server {
 		channels.add(new Channel("Main"));
 		
 		System.out.print("Starting commandhandler...");
-		commReg = new CommandRegistry();
+		commReg = new CommandRegistry("server.command");
 		System.out.println("Done");
 		
 		System.out.print("Creating virtual local client...");

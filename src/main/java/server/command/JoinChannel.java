@@ -1,4 +1,4 @@
-package command;
+package server.command;
 
 import java.util.Optional;
 
@@ -10,10 +10,10 @@ import common.Command;
 import common.MessagePacket;
 import common.MessagePacket.MessageType;
 
-public class LeaveChannel extends Command {
+public class JoinChannel extends Command {
 	
 	@Override
-	public void execute(String[] args, Client caller) throws Exception {
+	public void execute(String[] args, Client caller) {
 		if (caller.equals(Server.OPClient)) {
 			caller.send("Client-only command.");
 			return;
@@ -23,30 +23,27 @@ public class LeaveChannel extends Command {
 		Channel selectedChannel = maybeChannel.isPresent() ? maybeChannel.get() : null;
 		
 		try {
-			selectedChannel.remove(caller);
-			if (caller.primaryChannel.equals(selectedChannel))
-				caller.primaryChannel = Server.channels.get(0);
-			caller.send(new MessagePacket("You left channel " + args[0] + ".", MessageType.COMMAND));
-			caller.send(new MessagePacket("You are now speaking in channel " + caller.primaryChannel.name + ".", MessageType.COMMAND));
+			selectedChannel.add(caller);
+			caller.primaryChannel = selectedChannel;
+			caller.send(new MessagePacket("You are now speaking in channel " + args[0] + ".", MessageType.COMMAND));
 		} catch (NullPointerException ex) {
-			caller.send(new MessagePacket("No channel named " + args[0] + ".", MessageType.ERROR));
-			return;
+			caller.send(new MessagePacket("No such channel!", MessageType.ERROR));
 		}
 	}
 	
 	@Override
 	public String getName() {
-		return "leave";
+		return "join";
 	}
 	
 	@Override
 	public String getPermission() {
-		return "noob.leave";
+		return "noob.channel";
 	}
 	
 	@Override
 	public String getDescription() {
-		return "Removes caller from specified channel. (/leave <channel>)";
+		return "Sets specified channel as primary (/join <channel>)";
 	}
 	
 	@Override

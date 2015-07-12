@@ -3,10 +3,9 @@ package server;
 import java.util.HashMap;
 import java.util.List;
 
+import common.Command;
 import util.ClassFinder;
 import util.StringArrays;
-
-import common.Command;
 
 public class CommandRegistry extends HashMap<String, Command> {
 	
@@ -15,8 +14,8 @@ public class CommandRegistry extends HashMap<String, Command> {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	public CommandRegistry() {
-		List<Class<?>> classes = ClassFinder.find("command");
+	public CommandRegistry(String commandPackage) {
+		List<Class<?>> classes = ClassFinder.find(commandPackage);
 		
 		for (Class<?> comm: classes) {
 			try {

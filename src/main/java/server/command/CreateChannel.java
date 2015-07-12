@@ -1,4 +1,4 @@
-package command;
+package server.command;
 
 import server.Client;
 import server.Server;
