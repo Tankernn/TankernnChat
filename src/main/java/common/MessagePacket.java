@@ -8,11 +8,13 @@ import java.util.Date;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
-import server.Server;
-
-@SuppressWarnings("serial")
-public class Message implements java.io.Serializable {
+public class MessagePacket implements Packet {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public enum MessageType {
 		PM, NORMAL, WARNING, ERROR, COMMAND, INFO
 	}
@@ -20,44 +22,35 @@ public class Message implements java.io.Serializable {
 	public MessageType messType = MessageType.NORMAL;
 	public String content = "", channel = "", sender = "";
 	public SimpleAttributeSet style = new SimpleAttributeSet();
-	public String[] usersOnline;
-	public boolean preInfo = true;
 	
-	public Message(String channel, String send, String con, MessageType messType) {
+	public MessagePacket(String channel, String send, String con, MessageType messType) {
 		this.sender = send;
 		this.channel = channel;
 		this.content = con;
 		this.messType = messType;
-		usersOnline = Server.getUsersOnline();
 	}
 	
-	public Message(String sender, String con) {
+	public MessagePacket(String con, MessageType messType) {
+		this.content = con;
+		this.messType = messType;
+	}
+	
+	public MessagePacket(String sender, String con) {
 		this("", sender, con, MessageType.NORMAL);
 	}
 	
-	public Message(String con) {
+	public MessagePacket(String con) {
 		this("Info", "SERVER", con, MessageType.INFO);
 	}
 	
-	public Message(String con, MessageType messType, boolean preInfo) { //TODO Needs to include Server.getUsersOnline() to prevent NullPointerException
-		this.content = con;
-		this.preInfo = preInfo;
-		this.messType = messType;
-		if (preInfo)
-			usersOnline = Server.getUsersOnline();
-		else
-			usersOnline = null;
-	}
-	
 	public boolean validate() {
-		if (content.equals("") || content == null) {
-			return false;
-		}
-		return true;
+		return (!content.equals("")) && content != null;
 	}
 	
 	@Override
 	public String toString() {
+		boolean preInfo = false;
+		
 		switch (messType) {
 		case COMMAND:
 			StyleConstants.setForeground(style, Color.GREEN);
@@ -67,11 +60,14 @@ public class Message implements java.io.Serializable {
 			break;
 		case INFO:
 			StyleConstants.setForeground(style, Color.BLUE);
+			preInfo = true;
 			break;
 		case NORMAL:
+			preInfo = true;
 			break;
 		case PM:
 			StyleConstants.setForeground(style, Color.GRAY);
+			preInfo = true;
 			break;
 		case WARNING:
 			StyleConstants.setForeground(style, Color.YELLOW);
@@ -80,15 +76,14 @@ public class Message implements java.io.Serializable {
 			break;
 		}
 		
-		DateFormat dateFormat = new SimpleDateFormat("[HH:mm:ss]");
-		Date time = new Date();
-		String timestamp = dateFormat.format(time);
-		
-		String preInfoStr = timestamp + "<" + channel + ">" + sender + ": ";
-		
-		if (preInfo)
+		if (preInfo) {
+			DateFormat dateFormat = new SimpleDateFormat("[HH:mm:ss]");
+			Date time = new Date();
+			String timestamp = dateFormat.format(time);
+			
+			String preInfoStr = timestamp + "<" + channel + ">" + sender + ": ";
 			return preInfoStr + content;
-		else
+		} else
 			return content;
 	}
 }

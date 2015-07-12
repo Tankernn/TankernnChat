@@ -7,8 +7,8 @@ import server.Client;
 import server.Server;
 
 import common.Command;
-import common.Message;
-import common.Message.MessageType;
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 
 public class JoinChannel extends Command {
 	
@@ -25,9 +25,9 @@ public class JoinChannel extends Command {
 		try {
 			selectedChannel.add(caller);
 			caller.primaryChannel = selectedChannel;
-			caller.send(new Message("You are now speaking in channel " + args[0] + ".", MessageType.COMMAND, false));
+			caller.send(new MessagePacket("You are now speaking in channel " + args[0] + ".", MessageType.COMMAND));
 		} catch (NullPointerException ex) {
-			caller.send(new Message("No such channel!", MessageType.ERROR, false));
+			caller.send(new MessagePacket("No such channel!", MessageType.ERROR));
 		}
 	}
 	

@@ -10,8 +10,8 @@ import util.Numbers;
 import util.StringArrays;
 
 import common.Command;
-import common.Message;
-import common.Message.MessageType;
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 
 public class Ban extends Command {
 	
@@ -26,11 +26,11 @@ public class Ban extends Command {
 		if (maybeVictim.isPresent())
 			victim = maybeVictim.get();
 		else {
-			caller.send(new Message("No user called " + args[0] + ".", MessageType.ERROR, false));
+			caller.send(new MessagePacket("No user called " + args[0] + ".", MessageType.ERROR));
 			return;
 		}
 		
-		IP = victim.sock.getInetAddress().toString();
+		IP = victim.getIP();
 		
 		BanNote bn = new BanNote(IP);
 		

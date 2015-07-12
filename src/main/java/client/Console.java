@@ -5,7 +5,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-import common.Message;
+import common.MessagePacket;
 
 @SuppressWarnings("serial")
 public class Console extends JTextPane {
@@ -14,7 +14,7 @@ public class Console extends JTextPane {
 		setEditable(false);
 	}
 	
-	void log(Message mess) {
+	void log(MessagePacket mess) {
 		SwingUtilities.invokeLater(new AppendThread(mess.toString(), mess.style, this.getStyledDocument()));
 	}
 	

@@ -8,7 +8,7 @@ import java.util.Optional;
 import util.Logger;
 import util.ServerProperties;
 
-import common.Message;
+import common.MessagePacket;
 
 public class Server {
 	static ServerProperties prop = new ServerProperties();
@@ -80,11 +80,11 @@ public class Server {
 				newClient = new Client(Server.so.accept());
 				clients.add(newClient);
 				channels.get(0).add(newClient);
-				wideBroadcast(new Message(newClient.username + " has connected."));
+				wideBroadcast(new MessagePacket(newClient.username + " has connected."));
 			} catch (IllegalArgumentException ex) {
 				
 			} catch (ArrayIndexOutOfBoundsException ex) {
-				newClient.send(new Message("Server full!"));
+				newClient.send(new MessagePacket("Server full!"));
 				newClient.disconnect(false);
 			} catch (IOException ex) {
 				if (so.isClosed())
@@ -100,29 +100,35 @@ public class Server {
 		return channels.stream().filter(c -> c.name.equals(name)).findFirst();
 	}
 	
-	public static void wideBroadcast(Message mess) {
+	public static void wideBroadcast(MessagePacket mess) {
 		clients.broadcast(mess);
 	}
 	
 	public static String[] getUsersOnline() {
-		return clients.listClientsArray();
+		return clients.getUsernameArray();
 	}
 	
-	public static String listClients() {
-		return clients.listClients();
+	public static String listClients(char c) {
+		return clients.listClients(c);
 	}
 	
 	public static Optional<Client> getUserByName(String username) {
 		return clients.getClientByName(username);
 	}
 	
-	public static void cleanUp() { //Makes sure the client gets removed from all arrays
+	/**
+	 * Removes disconnected clients from all collections on the server.
+	 */
+	public static void cleanUp() {
 		clients.cleanUp();
 		channels.forEach(c -> c.cleanUp());
 	}
 	
+	/**
+	 * Disconnects all users and closes log and socket.
+	 */
 	public static void exit() {
-		wideBroadcast(new Message("Shutting down server!"));
+		wideBroadcast(new MessagePacket("Shutting down server!"));
 		
 		for (int i = 0; i < clients.size(); i++)
 			//Has to be done with number iteration, otherwise unsafe

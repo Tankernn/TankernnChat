@@ -31,8 +31,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
-import common.Message;
-import common.Message.MessageType;
+import common.InfoPacket;
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 
 @SuppressWarnings("serial")
 public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyListener {
@@ -51,7 +52,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 	GridBagConstraints con = new GridBagConstraints();
 	
 	JPanel right = new JPanel();
-	JLabel lblUsersOnline = new JLabel("Users online:");
+	JLabel infoLabel = new JLabel("Users online:");
 	DefaultListModel<String> model = new DefaultListModel<String>();
 	JList<String> userList = new JList<String>(model);
 	JButton reconnect = new JButton("Reconnect");
@@ -69,15 +70,15 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		userList.setLayoutOrientation(JList.VERTICAL);
 		//Label config
-		lblUsersOnline.setHorizontalAlignment(JLabel.CENTER);
-		lblUsersOnline.setBorder(new EmptyBorder(5, 5, 5, 5));
+		infoLabel.setHorizontalAlignment(JLabel.CENTER);
+		infoLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		//Layout config
 		right.setLayout(g);
 		con.fill = GridBagConstraints.HORIZONTAL;
 		con.weightx = 1;
 		con.gridx = 0;
 		
-		right.add(lblUsersOnline, con);
+		right.add(infoLabel, con);
 		
 		con.weighty = 1;
 		con.fill = GridBagConstraints.BOTH;
@@ -116,13 +117,13 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		if (so.isConnected() && !so.isClosed())
 			out.println(text);
 		else {
-			chat.log(new Message("Not connected to server!", MessageType.WARNING, false));
+			chat.log(new MessagePacket("Not connected to server!", MessageType.WARNING));
 			write.setEnabled(false);
 		}
 	}
 	
 	void connect(String address, int port, String username) {
-		chat.log(new Message("Connecting to " + address + " on port " + port + ".", MessageType.INFO, false));
+		chat.log(new MessagePacket("Connecting to " + address + " on port " + port + ".", MessageType.INFO));
 		if (getMessages != null)
 			getMessages.interrupt();
 		
@@ -133,7 +134,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		} catch (NullPointerException ex) {
 			//Nothing
 		} catch (IOException ex) {
-			chat.log(new Message(ex.toString(), MessageType.ERROR, false));
+			chat.log(new MessagePacket(ex.toString(), MessageType.ERROR));
 		}
 		
 		try {
@@ -142,10 +143,10 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 			objIn = new ObjectInputStream(so.getInputStream());
 			out = new PrintWriter(so.getOutputStream(), true);
 		} catch (SocketTimeoutException ex) {
-			chat.log(new Message("Could not connect to server. (Connection timed out!)", MessageType.ERROR, false));
+			chat.log(new MessagePacket("Could not connect to server. (Connection timed out!)", MessageType.ERROR));
 			return;
 		} catch (IOException e) {
-			chat.log(new Message(e.toString(), MessageType.ERROR, false));
+			chat.log(new MessagePacket(e.toString(), MessageType.ERROR));
 			return;
 		}
 		
@@ -159,7 +160,7 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == reconnect)
+		if (e.getSource().equals(reconnect))
 			connect(adress, port, username);
 	}
 	
@@ -168,31 +169,33 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		try {
 			getMessages();
 		} catch (EOFException eof) {
-			chat.log(new Message(eof.toString() + " Disconnected from host.", MessageType.ERROR, false));
+			chat.log(new MessagePacket(eof.toString() + " Disconnected from host.", MessageType.ERROR));
 		} catch (ClassNotFoundException cnf) {
-			chat.log(new Message("The message recieved from the server could not be understood. Are you using the right version?", MessageType.ERROR, false));
+			chat.log(new MessagePacket("The message recieved from the server could not be understood. Are you using the right version?", MessageType.ERROR));
 		} catch (IOException e) {
-			chat.log(new Message(e.toString(), MessageType.ERROR, false));
+			chat.log(new MessagePacket(e.toString(), MessageType.ERROR));
 		}
 	}
 	
 	public void getMessages() throws IOException, ClassNotFoundException {
 		while (!getMessages.isInterrupted()) {
 			Object fromServer = objIn.readObject();
-			if (fromServer instanceof Message) {
-				Message mess = ((Message) fromServer);
+			if (fromServer instanceof MessagePacket) {
+				MessagePacket mess = ((MessagePacket) fromServer);
 				chat.log(mess);
+			} else if (fromServer instanceof InfoPacket) {
+				InfoPacket info = (InfoPacket) fromServer;
 				
-				if (mess.usersOnline == null)
-					continue;
+				infoLabel.setText("<html>" + info.toString().replace("\n", "<br>"));
 				
 				model = new DefaultListModel<String>();
-				for (String user: mess.usersOnline)
+				for (String user: info.usersOnline)
 					model.addElement(user);
 				
 				userList.setModel(model);
-			} else if (fromServer instanceof String) {
-				chat.log(new Message((String) fromServer, MessageType.NORMAL, false));
+			}
+			else if (fromServer instanceof String) {
+				chat.log(new MessagePacket((String) fromServer, MessageType.NORMAL));
 			} else
 				throw new ClassNotFoundException();
 		}

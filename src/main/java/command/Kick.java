@@ -6,8 +6,8 @@ import server.Client;
 import server.Server;
 
 import common.Command;
-import common.Message;
-import common.Message.MessageType;
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 
 public class Kick extends Command {
 	
@@ -18,7 +18,7 @@ public class Kick extends Command {
 		try {
 			maybeVictim.orElseThrow(NullPointerException::new).disconnect(false);
 		} catch (NullPointerException ex) {
-			caller.send(new Message("No user called " + args[0] + "!", MessageType.ERROR, false));
+			caller.send(new MessagePacket("No user called " + args[0] + "!", MessageType.ERROR));
 		}
 	}
 	

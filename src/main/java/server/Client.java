@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 
 import javax.swing.Timer;
 
-import common.Message;
+import common.InfoPacket;
+import common.MessagePacket;
+import common.Packet;
 
 public class Client implements Runnable, ActionListener {
 	Thread readuser;
@@ -22,7 +24,7 @@ public class Client implements Runnable, ActionListener {
 	public String username;
 	public Socket sock;
 	
-	String[] permissions;
+	public String[] permissions;
 	
 	int messLastPeriod = 0;
 	Timer timer = new Timer(3000, this);
@@ -47,7 +49,7 @@ public class Client implements Runnable, ActionListener {
 		
 		permissions = new String[] {"noob.*"};
 		
-		send(new Message("Welcome to the server! Enjoy your stay!"));
+		send(new MessagePacket("Welcome to the server! Enjoy your stay!"));
 		
 		readuser = new Thread(this, username);
 		readuser.start();
@@ -106,7 +108,7 @@ public class Client implements Runnable, ActionListener {
 		Server.cleanUp();
 		
 		if (output)
-			Server.wideBroadcast(new Message(username + " has disconnected."));
+			Server.wideBroadcast(new MessagePacket(username + " has disconnected."));
 	}
 	
 	public void disconnect() {
@@ -142,7 +144,7 @@ public class Client implements Runnable, ActionListener {
 						send("No spamming!");
 						disconnect(false);
 					} else
-						primaryChannel.broadcast(new Message(this.username, lastMess));
+						primaryChannel.broadcast(new MessagePacket(this.username, lastMess));
 				}
 			}
 			disconnect();
@@ -150,15 +152,27 @@ public class Client implements Runnable, ActionListener {
 			disconnect();
 		}
 	}
-	
-	public void send(Object message) {
+	/**
+	 * Sends a packet to the user.
+	 * @param pack Packet to send to the user
+	 */
+	public void send(Packet pack) {
 		try {
-			objOut.writeObject(message);
+			objOut.writeObject(pack);
+			objOut.writeObject(InfoPacket.of(this));
 			objOut.flush();
 		} catch (IOException e) {
 			if (isConnected())
 				disconnect();
 		}
+	}
+	
+	public void send(String message) {
+		send(new MessagePacket(message));
+	}
+	
+	public String getIP() {
+		return sock.getInetAddress().toString();
 	}
 	
 	@Override

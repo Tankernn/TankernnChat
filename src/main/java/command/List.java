@@ -7,8 +7,8 @@ import server.Client;
 import server.Server;
 
 import common.Command;
-import common.Message;
-import common.Message.MessageType;
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 
 public class List extends Command {
 	
@@ -20,19 +20,19 @@ public class List extends Command {
 			Optional<Channel> maybeChannel = Server.getChannelByName(args[0]);
 			Channel selectedChannel = maybeChannel.isPresent() ? maybeChannel.get() : null;
 			try {
-				arr = selectedChannel.listClients();
+				arr = selectedChannel.listClients('\n');
 				channelName = selectedChannel.name;
 			} catch (NullPointerException ex) {
-				caller.send(new Message("No channel named " + channelName + ".", MessageType.ERROR, false));
+				caller.send(new MessagePacket("No channel named " + channelName + ".", MessageType.ERROR));
 				return;
 			}
 		} else
-			arr = Server.listClients();
+			arr = Server.listClients('\n');
 		
 		if (channelName == null)
-			caller.send(new Message("Users online are:" + "\n" + arr, MessageType.COMMAND, false));
+			caller.send(new MessagePacket("Users online are:" + "\n" + arr, MessageType.COMMAND));
 		else
-			caller.send(new Message("Users in channel " + channelName + " are:" + "\n" + arr, MessageType.COMMAND, false));
+			caller.send(new MessagePacket("Users in channel " + channelName + " are:" + "\n" + arr, MessageType.COMMAND));
 	}
 	
 	@Override

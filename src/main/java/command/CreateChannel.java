@@ -4,7 +4,7 @@ import server.Client;
 import server.Server;
 
 import common.Command;
-import common.Message;
+import common.MessagePacket;
 
 public class CreateChannel extends Command {
 	
@@ -12,7 +12,7 @@ public class CreateChannel extends Command {
 	public void execute(String[] args, Client caller) throws Exception {
 		Server.channels.add(new server.Channel(args[0]));
 		
-		Server.wideBroadcast(new Message("Channel " + args[0] + " is now available. Use '/join " + args[0] + "' to join."));
+		Server.wideBroadcast(new MessagePacket("Channel " + args[0] + " is now available. Use '/join " + args[0] + "' to join."));
 	}
 	
 	@Override

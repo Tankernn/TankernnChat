@@ -7,8 +7,8 @@ import server.Client;
 import server.Server;
 
 import common.Command;
-import common.Message;
-import common.Message.MessageType;
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 
 public class LeaveChannel extends Command {
 	
@@ -26,10 +26,10 @@ public class LeaveChannel extends Command {
 			selectedChannel.remove(caller);
 			if (caller.primaryChannel.equals(selectedChannel))
 				caller.primaryChannel = Server.channels.get(0);
-			caller.send(new Message("You left channel " + args[0] + ".", MessageType.COMMAND, false));
-			caller.send(new Message("You are now speaking in channel " + caller.primaryChannel.name + ".", MessageType.COMMAND, false));
+			caller.send(new MessagePacket("You left channel " + args[0] + ".", MessageType.COMMAND));
+			caller.send(new MessagePacket("You are now speaking in channel " + caller.primaryChannel.name + ".", MessageType.COMMAND));
 		} catch (NullPointerException ex) {
-			caller.send(new Message("No channel named " + args[0] + ".", MessageType.ERROR, false));
+			caller.send(new MessagePacket("No channel named " + args[0] + ".", MessageType.ERROR));
 			return;
 		}
 	}

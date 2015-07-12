@@ -1,6 +1,6 @@
 package server;
 
-import common.Message;
+import common.MessagePacket;
 
 public class Channel extends ClientCollection {
 	/**
@@ -16,7 +16,7 @@ public class Channel extends ClientCollection {
 	}
 	
 	@Override
-	void broadcast(Message mess) {
+	void broadcast(MessagePacket mess) {
 		mess.channel = name;
 		super.broadcast(mess);
 	}

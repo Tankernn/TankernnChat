@@ -7,8 +7,8 @@ import server.Server;
 import util.StringArrays;
 
 import common.Command;
-import common.Message;
-import common.Message.MessageType;
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 
 public class PrivateMessage extends Command {
 	
@@ -20,7 +20,7 @@ public class PrivateMessage extends Command {
 		if (maybeVictim.isPresent())
 			reciever = maybeVictim.get();
 		else {
-			caller.send(new Message("No user called " + args[0] + ".", MessageType.ERROR, false));
+			caller.send(new MessagePacket("No user called " + args[0] + ".", MessageType.ERROR));
 			return;
 		}
 		if (caller.equals(reciever)) {
@@ -31,7 +31,7 @@ public class PrivateMessage extends Command {
 			return;
 		}
 		
-		Message mess = new Message("PM", caller.username, StringArrays.arrayToString(StringArrays.removeFirst(args)), Message.MessageType.PM);
+		MessagePacket mess = new MessagePacket("PM", caller.username, StringArrays.arrayToString(StringArrays.removeFirst(args)), MessagePacket.MessageType.PM);
 		
 		reciever.send(mess);
 		caller.send(mess);

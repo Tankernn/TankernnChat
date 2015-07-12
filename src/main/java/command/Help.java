@@ -8,8 +8,8 @@ import server.Client;
 import server.Server;
 
 import common.Command;
-import common.Message;
-import common.Message.MessageType;
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 
 public class Help extends Command {
 	
@@ -25,7 +25,7 @@ public class Help extends Command {
 			if (it.hasNext())
 				help += "\n";
 		}
-		caller.send(new Message(help, MessageType.COMMAND, false));
+		caller.send(new MessagePacket(help, MessageType.COMMAND));
 	}
 	
 	@Override
