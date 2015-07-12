@@ -27,7 +27,9 @@ public class CommandRegistry extends HashMap<String, Command> {
 		}
 	}
 	
-	public void executeCommand(String[] command, Client caller) {
+	public void executeCommand(String commandStr, Client caller) {
+		String[] command = commandStr.substring(1).split(" ");
+		
 		Command comm;
 		if ((comm = get(command[0])) != null) // Get the command
 			if (caller.hasPermission(comm.getPermission())) { // Check if the client has permission

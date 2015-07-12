@@ -32,10 +32,8 @@ public class BanNote {
 	
 	@Override
 	public String toString() {
-		String expStr;
-		if (expiry == null)
-			expStr = "Forever";
-		else
+		String expStr = "Never";
+		if (expiry != null)
 			expStr = expiry.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 		
 		return "You are banned from this server." + "\n" + "Reason: " + reason + "\n" + "Expiry: " + expStr;

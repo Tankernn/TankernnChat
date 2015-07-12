@@ -7,7 +7,7 @@ import common.MessagePacket;
 
 public class ClientCollection extends ArrayList<Client> {
 	/**
-	 * 
+	 * A collection of clients.
 	 */
 	private static final long serialVersionUID = 1L;
 	

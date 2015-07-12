@@ -15,8 +15,8 @@ import common.InfoPacket;
 import common.MessagePacket;
 import common.Packet;
 
-public class Client implements Runnable, ActionListener {
-	Thread readuser;
+public class Client implements ActionListener {
+	ReadUser readuser;
 	
 	BufferedReader in;
 	ObjectOutputStream objOut;
@@ -27,7 +27,7 @@ public class Client implements Runnable, ActionListener {
 	public String[] permissions;
 	
 	int messLastPeriod = 0;
-	Timer timer = new Timer(3000, this);
+	Timer timer = new Timer(800, this);
 	
 	public Channel primaryChannel = Server.channels.get(0);
 	
@@ -51,8 +51,7 @@ public class Client implements Runnable, ActionListener {
 		
 		send(new MessagePacket("Welcome to the server! Enjoy your stay!"));
 		
-		readuser = new Thread(this, username);
-		readuser.start();
+		readuser = new ReadUser();
 		
 		timer.start();
 	}
@@ -119,7 +118,7 @@ public class Client implements Runnable, ActionListener {
 		return !sock.isClosed();
 	}
 	
-	boolean hasPermission(String commandPermission) {
+	public boolean hasPermission(String commandPermission) {
 		for (int i = 0; i < permissions.length; i++) {
 			if (commandPermission.startsWith(permissions[i].replace(".*", ".")) || commandPermission.equalsIgnoreCase(permissions[i]) || permissions[i].equalsIgnoreCase("*"))
 				return true;
@@ -127,33 +126,47 @@ public class Client implements Runnable, ActionListener {
 		return false;
 	}
 	
-	@Override
-	public void run() {
-		String lastMess;
-		try {
-			while (!readuser.isInterrupted() && ((lastMess = in.readLine()) != null)) {
-				if (lastMess.startsWith("/")) //Command handling
-				{
-					String[] commandarray = lastMess.substring(1).split(" ");
-					Server.commReg.executeCommand(commandarray, this);
-				}
+	class ReadUser extends Thread {
+		ReadUser() {
+			super(Client.this.username);
+			this.start();
+		}
+		
+		@Override
+		public void run() {
+			String mess;
+			while (!readuser.isInterrupted() && (mess = getNewMessage()) != null) {
+				
+				if (mess.startsWith("/")) //Command handling
+					Server.commReg.executeCommand(mess, Client.this);
 				else //Normal message handling
 				{
 					messLastPeriod++;
-					if (messLastPeriod > 5) {
+					if (messLastPeriod > 1 && !(Client.this instanceof LocalClient)) {
 						send("No spamming!");
 						disconnect(false);
 					} else
-						primaryChannel.broadcast(new MessagePacket(this.username, lastMess));
+						primaryChannel.broadcast(new MessagePacket(Client.this.username, mess));
 				}
 			}
 			disconnect();
-		} catch (IOException e) {
-			disconnect();
+		}
+		
+		public String getNewMessage() {
+			try {
+				return in.readLine();
+			} catch (IOException e) {
+				disconnect();
+			}
+			return null;
 		}
 	}
+	
+
+	
 	/**
 	 * Sends a packet to the user.
+	 * 
 	 * @param pack Packet to send to the user
 	 */
 	public void send(Packet pack) {
