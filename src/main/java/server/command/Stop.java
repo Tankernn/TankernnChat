@@ -5,7 +5,7 @@ import server.Server;
 
 import common.Command;
 
-public class Exit extends Command {
+public class Stop extends Command {
 	
 	@Override
 	public void execute(String[] args, Client caller) {
@@ -14,7 +14,7 @@ public class Exit extends Command {
 	
 	@Override
 	public String getName() {
-		return "exit";
+		return "stop";
 	}
 	
 	@Override

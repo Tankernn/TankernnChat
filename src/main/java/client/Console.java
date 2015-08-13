@@ -14,8 +14,12 @@ public class Console extends JTextPane {
 		setEditable(false);
 	}
 	
-	void log(MessagePacket mess) {
+	void print(MessagePacket mess) {
 		SwingUtilities.invokeLater(new AppendThread(mess.toString(), mess.style, this.getStyledDocument()));
+	}
+	
+	void print(String str) {
+		SwingUtilities.invokeLater(new AppendThread(str, new SimpleAttributeSet(), this.getStyledDocument()));
 	}
 	
 	private static class AppendThread extends Thread {

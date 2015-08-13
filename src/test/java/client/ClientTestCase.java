@@ -2,10 +2,13 @@ package client;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import server.BanNote;
 import server.Server;
 
 public class ClientTestCase {
@@ -36,6 +39,42 @@ public class ClientTestCase {
 		user2 = new ChatWindow("localhost", 25566, "user2");
 		
 		user1.send("/pm user2 Hi there user2!");
+	}
+	
+	@Test
+	public void testBan() {
+		Server.banNotes.add(new BanNote("localhost"));
+		assertTrue(user1.so.isClosed());
+		
+		user1.connect("localhost", 25566, "user1");
+		assertTrue(user1.so.isClosed());
+		
+		Server.banNotes.clear();
+		
+		user1.connect("localhost", 25566, "user1");
+		assertTrue(!user1.so.isClosed());
+	}
+	
+	@Test
+	public void testNames() {
+		user1.connect("localhost", 25566, "user 1");
+		assertTrue(user1.so.isClosed());
+		
+		user1.connect("localhost", 25566, "user1");
+		user2 = new ChatWindow("localhost", 25566, "user1");
+		
+		assertTrue(user2.so.isClosed());
+		assertTrue(!user1.so.isClosed());
+	}
+	
+	@Test
+	public void testFullServer() {
+		ArrayList<ChatWindow> arr = new ArrayList<ChatWindow>();
+		
+		for (int i = 0; i < 100; i++)
+			arr.add(new ChatWindow("localhost", 25566, "user" + i));
+		
+		assertTrue(arr.get(99).so.isClosed());
 	}
 	
 	@AfterClass

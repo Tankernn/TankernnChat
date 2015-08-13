@@ -4,11 +4,11 @@ import java.util.Optional;
 
 import server.Client;
 import server.Server;
-import util.StringArrays;
 
 import common.Command;
 import common.MessagePacket;
 import common.MessagePacket.MessageType;
+import common.util.StringArrays;
 
 public class PrivateMessage extends Command {
 	

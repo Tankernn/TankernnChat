@@ -6,12 +6,12 @@ import java.util.Optional;
 import server.BanNote;
 import server.Client;
 import server.Server;
-import util.Numbers;
-import util.StringArrays;
 
 import common.Command;
 import common.MessagePacket;
 import common.MessagePacket.MessageType;
+import common.util.Numbers;
+import common.util.StringArrays;
 
 public class Ban extends Command {
 	

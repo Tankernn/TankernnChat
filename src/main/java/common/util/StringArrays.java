@@ -1,4 +1,4 @@
-package util;
+package common.util;
 
 public class StringArrays {
 	public static String[] removeFirst(String[] oldArr) {

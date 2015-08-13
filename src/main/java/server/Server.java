@@ -5,12 +5,11 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import util.Logger;
-import util.ServerProperties;
 import common.MessagePacket;
+import common.util.Logger;
 
 public class Server {
-	static ServerProperties prop = new ServerProperties();
+	static ServerProperties prop = new ServerProperties("server.properties");
 	static int port, maxUsers;
 	static final String version = "0.3";
 	
@@ -31,8 +30,8 @@ public class Server {
 		System.out.println("Done");
 		
 		System.out.print("Reading numbers from properties object...");
-		port = prop.getNumberProperty("port");
-		maxUsers = prop.getNumberProperty("maxUsers");
+		port = prop.getInt("port");
+		maxUsers = prop.getInt("maxUsers");
 		System.out.println("Done");
 		
 		System.out.print("Setting up socket...");

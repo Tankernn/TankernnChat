@@ -1,11 +1,11 @@
 package client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Properties;
+import java.io.ObjectInputStream;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Scanner;
 
 import javax.swing.JComponent;
@@ -13,20 +13,25 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
+
 public class ChatClient {
-	static Properties prop = new Properties();
-	static File confFile = new File("client.properties");
+	static ClientProperties prop = new ClientProperties("client.properties");
+	public static ChatWindow chatWindow;
+	
+	static Thread getMessages;
+	
+	public static String host, username;
+	public static int port;
+	
+	public static Socket so = new Socket();
+	static ObjectInputStream objIn;
+	static PrintWriter out;
 	
 	public static void main(String[] arg) {
-		try {
-			prop.load(new FileInputStream(confFile));
-		} catch (FileNotFoundException e) {
-			prop.setProperty("host", "tankernn.eu");
-			prop.setProperty("port", "25566");
-			prop.setProperty("username", "Username");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		prop.loadProperties();
 		
 		JTextField hostBox = new JTextField(prop.getProperty("host"));
 		JTextField portBox = new JTextField(prop.getProperty("port"));
@@ -37,7 +42,7 @@ public class ChatClient {
 				new JLabel("Username:"), userBox
 		};
 		
-		String host, username, portString;
+		String portString;
 		
 		JOptionPane.showMessageDialog(null, inputs, "Chat settings", JOptionPane.PLAIN_MESSAGE);
 		
@@ -48,22 +53,86 @@ public class ChatClient {
 		
 		portString = portBox.getText();
 		Scanner sc = new Scanner(portString);
-		int port = sc.nextInt();
+		port = sc.nextInt();
 		sc.close();
 		prop.setProperty("port", portString);
 		
-		writeConfFile();
+		prop.store();
 		
-		new ChatWindow(host, port, username);
+		chatWindow = new ChatWindow();
+		connect();
 	}
 	
-	static void writeConfFile() {
-		try {
-			if (!confFile.exists())
-				confFile.createNewFile();
-			prop.store(new FileOutputStream(confFile), "Configuration for chat client");
-		} catch (IOException e) {
-			e.printStackTrace();
+	static void print(String text) {
+		chatWindow.chat.print(text);
+	}
+	
+	static void print(MessagePacket text) {
+		chatWindow.chat.print(text);
+	}
+	
+	public static void send(String text) {
+		switch (text.toLowerCase()) {
+		case "/disconnect":
+			disconnect();
+			break;
+		case "/exit":
+			System.exit(0);
+			break;
+		case "/help":
+			print("disconnect: Disconnects you from the server.");
+			print("exit: Exits the client");
+		default:
+			if (so.isConnected() && !so.isClosed())
+				out.println(text);
+			else {
+				print(new MessagePacket("Not connected to server!", MessageType.WARNING));
+				chatWindow.write.setEnabled(false);
+			}
 		}
 	}
+	
+	static void connect() {
+		disconnect();
+		
+		print(new MessagePacket("Connecting to " + host + " on port " + port + ".", MessageType.INFO));
+		
+		try {
+			so = new Socket();
+			so.connect(new InetSocketAddress(host, port), 1000);
+			objIn = new ObjectInputStream(so.getInputStream());
+			out = new PrintWriter(so.getOutputStream(), true);
+		} catch (SocketTimeoutException ex) {
+			print(new MessagePacket("Could not connect to server. (Connection timed out!)", MessageType.ERROR));
+			return;
+		} catch (IOException e) {
+			print(new MessagePacket(e.toString(), MessageType.ERROR));
+			return;
+		}
+		
+		send(username); //First packet sent to server sets username
+		
+		getMessages = new ListenServerThread(objIn);
+		getMessages.start();
+		
+		chatWindow.write.setEnabled(true);
+	}
+	
+	static void disconnect() {
+		print("Disconnecting...");
+		
+		if (getMessages != null)
+			getMessages.interrupt();
+		
+		try {
+			so.close();
+			objIn.close();
+			out.close();
+		} catch (NullPointerException ex) {
+			//Nothing
+		} catch (IOException ex) {
+			print(new MessagePacket(ex.toString(), MessageType.ERROR));
+		}
+	}
+	
 }

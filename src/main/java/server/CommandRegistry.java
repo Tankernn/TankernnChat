@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import common.Command;
-import util.ClassFinder;
-import util.StringArrays;
+import common.util.ClassFinder;
+import common.util.StringArrays;
 
 public class CommandRegistry extends HashMap<String, Command> {
 	
