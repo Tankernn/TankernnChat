@@ -4,13 +4,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 import javax.swing.Timer;
 
+import common.FileSendPacket;
 import common.InfoPacket;
 import common.MessagePacket;
 import common.Packet;
@@ -19,6 +21,7 @@ public class Client implements ActionListener {
 	ReadUser readuser;
 	
 	BufferedReader in;
+	ObjectInputStream objIn;
 	ObjectOutputStream objOut;
 	
 	public String username;
@@ -35,9 +38,13 @@ public class Client implements ActionListener {
 		sock = s;
 		
 		try {
-			in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+			objIn = new ObjectInputStream(sock.getInputStream()); //TODO Fix this crashing
 			objOut = new ObjectOutputStream(sock.getOutputStream());
-			username = in.readLine();
+			try {
+				username = (String) objIn.readObject();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -134,35 +141,57 @@ public class Client implements ActionListener {
 		
 		@Override
 		public void run() {
-			String mess;
+			Object mess;
 			while (!readuser.isInterrupted() && (mess = getNewMessage()) != null) {
-				
-				if (mess.startsWith("/")) //Command handling
-					Server.commReg.executeCommand(mess, Client.this);
-				else //Normal message handling
-				{
-					messLastPeriod++;
-					if (messLastPeriod > 1 && !(Client.this instanceof LocalClient)) {
-						send("No spamming!");
-						disconnect(false);
-					} else
-						primaryChannel.broadcast(new MessagePacket(Client.this.username, mess));
+				if (mess instanceof FileSendPacket) {
+					//TODO Finish file transfer function
+					
+					switch(((FileSendPacket) mess).action) {
+					case DENY:
+						break;
+					case INIT:
+						break;
+					case START:
+						break;
+					default:
+						break;
+					}
+					
+					try {
+						new FileTransfer(Client.this, Server.getUserByName(((FileSendPacket) mess).destinationUser).get());
+					} catch (NoSuchElementException ex) {
+						send("No such user! This is not supposed to be possible.");
+					}
+				} else if (mess instanceof String) {
+					String strMess = (String) mess;
+					
+					if (strMess.startsWith("/")) { //Command handling
+						Server.commReg.executeCommand(strMess, Client.this);
+					} else { //Normal message handling
+					
+						messLastPeriod++;
+						if (messLastPeriod > 1 && !(Client.this instanceof LocalClient)) {
+							send("No spamming!");
+							disconnect(false);
+						} else
+							primaryChannel.broadcast(new MessagePacket(Client.this.username, strMess));
+					}
 				}
 			}
 			disconnect();
 		}
 		
-		public String getNewMessage() {
+		public Object getNewMessage() {
 			try {
-				return in.readLine();
+				return objIn.readObject();
 			} catch (IOException e) {
 				disconnect();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
 			}
 			return null;
 		}
 	}
-	
-
 	
 	/**
 	 * Sends a packet to the user.

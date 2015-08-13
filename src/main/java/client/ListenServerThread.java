@@ -46,6 +46,10 @@ class ListenServerThread extends Thread {
 				ChatClient.chatWindow.updateList(info.usersOnline);
 				ChatClient.fileWindow.updateComboBox(info.usersOnline);
 				
+			} else if (fromServer instanceof FileSendPacket) {
+				ChatClient.fileWindow.setVisible(true);
+				
+				ChatClient.fileWindow.addDownload(new Download((FileSendPacket) fromServer));
 			} else if (fromServer instanceof String) {
 				ChatClient.print(new MessagePacket((String) fromServer, MessageType.NORMAL));
 			} else

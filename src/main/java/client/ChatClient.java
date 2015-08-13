@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import client.filesend.FileSendWindow;
 
 import common.MessagePacket;
 import common.MessagePacket.MessageType;
@@ -20,6 +21,7 @@ import common.MessagePacket.MessageType;
 public class ChatClient {
 	static ClientProperties prop = new ClientProperties("client.properties");
 	public static ChatWindow chatWindow;
+	public static FileSendWindow fileWindow = new FileSendWindow();
 	
 	static Thread getMessages;
 	
@@ -73,6 +75,9 @@ public class ChatClient {
 	
 	public static void send(String text) {
 		switch (text.toLowerCase()) {
+		case "/filesend":
+			fileWindow.setVisible(true);
+			break;
 		case "/disconnect":
 			disconnect();
 			break;
