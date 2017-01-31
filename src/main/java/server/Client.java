@@ -25,6 +25,7 @@ public class Client implements ActionListener {
 	public Socket sock;
 	
 	public String[] permissions;
+	public boolean isOP = false;
 	
 	int messLastPeriod = 0;
 	Timer timer = new Timer(800, this);
@@ -119,6 +120,9 @@ public class Client implements ActionListener {
 	}
 	
 	public boolean hasPermission(String commandPermission) {
+		if (this.isOP)
+			return true;
+		
 		for (int i = 0; i < permissions.length; i++) {
 			if (commandPermission.startsWith(permissions[i].replace(".*", ".")) || commandPermission.equalsIgnoreCase(permissions[i]) || permissions[i].equalsIgnoreCase("*"))
 				return true;
