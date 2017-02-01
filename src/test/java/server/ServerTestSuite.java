@@ -7,8 +7,4 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(value = Suite.class)
 @SuiteClasses(value = {client.ClientTestSuite.class})
 public class ServerTestSuite {
-	
-	public static Thread runServer = new Thread(() -> {
-			Server.main(new String[] {});
-	});
 }

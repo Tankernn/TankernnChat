@@ -10,7 +10,7 @@ public class Channel extends ClientCollection {
 	}
 	
 	@Override
-	void broadcast(MessagePacket mess) {
+	public synchronized void broadcast(MessagePacket mess) {
 		mess.channel = name;
 		super.broadcast(mess);
 	}

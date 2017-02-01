@@ -1,17 +1,21 @@
 package server;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Assert;
+import org.junit.Test;
+
+import util.ArrayUtil;
 
 public class ServerTestCase {
 	
-	@BeforeClass
-	public static void setUpClass() {
-		ServerTestSuite.runServer.start();
+	@Test
+	public void testArrayUtils() {
+		Assert.assertArrayEquals(new String[] {"like", "trains"}, ArrayUtil.removeFirst(new String[] {"I", "like", "trains"}));
 	}
 	
-	@AfterClass
-	public static void tearDownClass() {
-		Server.exit();
+	@Test
+	public void testCommandLoading() {
+		CommandRegistry registry = new CommandRegistry();
+		Assert.assertTrue(registry.getHelp().contains("kick"));
+		//registry.executeCommand("/help", caller);
 	}
 }

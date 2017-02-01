@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -95,7 +96,9 @@ public class Server {
 		while (!so.isClosed()) {
 			Client newClient = null;
 			try {
-				newClient = new Client(so.accept());
+				Socket clientSock = so.accept();
+				clients.cleanUp(); // Free taken names
+				newClient = new Client(clientSock);
 				clients.add(newClient);
 				getChannels().get(0).add(newClient);
 				wideBroadcast(new MessagePacket(newClient.username + " has connected."));

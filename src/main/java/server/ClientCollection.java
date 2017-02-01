@@ -1,8 +1,8 @@
 package server;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import common.MessagePacket;
 
@@ -11,7 +11,7 @@ import common.MessagePacket;
  */
 public class ClientCollection {
 	
-	private List<Client> clients = new ArrayList<>();
+	private List<Client> clients = new CopyOnWriteArrayList<>();
 
 	/**
 	 * Gets the user with specified username.
@@ -30,7 +30,7 @@ public class ClientCollection {
 	 * @param mess
 	 *            The message object to send.
 	 */
-	void broadcast(MessagePacket mess) {
+	public synchronized void broadcast(MessagePacket mess) {
 		if (mess.validate()) {
 			for (Client c : clients)
 				c.send(mess);
@@ -59,7 +59,7 @@ public class ClientCollection {
 	 * @param user
 	 *            User to remove.
 	 */
-	public void remove(Client user) {
+	public synchronized void remove(Client user) {
 		remove(user, false);
 	}
 
@@ -71,7 +71,7 @@ public class ClientCollection {
 	 * @param disconnect
 	 *            Should the user also be disconnected?
 	 */
-	public void remove(Client user, boolean disconnect) {
+	public synchronized void remove(Client user, boolean disconnect) {
 		if (disconnect)
 			user.disconnect();
 		clients.remove(user);
