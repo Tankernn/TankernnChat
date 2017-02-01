@@ -49,7 +49,7 @@ public class Server {
 		channels.add(new Channel("Main"));
 		
 		System.out.print("Starting commandhandler...");
-		commReg = new CommandRegistry("server.command");
+		commandRegistry = new CommandRegistry();
 		System.out.println("Done");
 		
 		System.out.print("Creating virtual local client...");

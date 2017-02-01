@@ -8,10 +8,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(value = {client.ClientTestSuite.class})
 public class ServerTestSuite {
 	
-	public static Thread runServer = new Thread() {
-		@Override
-		public void run() {
+	public static Thread runServer = new Thread(() -> {
 			Server.main(new String[] {});
-		}
-	};
+	});
 }

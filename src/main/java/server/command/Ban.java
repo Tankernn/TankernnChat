@@ -1,19 +1,19 @@
 package server.command;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.Optional;
 
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
 import server.BanNote;
 import server.Client;
 import server.Server;
-import util.Numbers;
-import util.StringArrays;
+import util.ArrayUtil;
 
-import common.Command;
-import common.MessagePacket;
-import common.MessagePacket.MessageType;
-
-public class Ban extends Command {
+@CommandInfo(desc = "Bans a user. (/ban <username> [seconds] [reason])", name = "ban", permission = "admin.ban", minArg = 1)
+public class Ban implements Command {
 	
 	@Override
 	public void execute(String[] args, Client caller) {
@@ -30,43 +30,29 @@ public class Ban extends Command {
 			return;
 		}
 		
-		IP = victim.getIP();
+		try {
+			IP = victim.getIP();
+		} catch (IOException e) {
+			e.printStackTrace();
+			caller.send(new MessagePacket("Error getting target IP address.", MessageType.ERROR));
+			return;
+		}
 		
 		BanNote bn = new BanNote(IP);
 		
 		if (args.length != 1)
 			try {
-				duration = Numbers.CInt(args[1]);
+				duration = Integer.parseInt(args[1]);
 				
 				if (args.length >= 3)
-					bn = new BanNote(IP, duration, StringArrays.arrayToString(StringArrays.removeFirst(StringArrays.removeFirst(args))));
+					bn = new BanNote(IP, duration, Arrays.toString(ArrayUtil.removeFirst(ArrayUtil.removeFirst(args))));
 				else
 					bn = new BanNote(IP, duration);
 			} catch (InputMismatchException ime) {
-				bn = new BanNote(IP, StringArrays.arrayToString(StringArrays.removeFirst(args)));
+				bn = new BanNote(IP, Arrays.toString(ArrayUtil.removeFirst(args)));
 			}
 		
-		Server.banNotes.add(bn);
-	}
-	
-	@Override
-	public String getName() {
-		return "ban";
-	}
-	
-	@Override
-	public String getPermission() {
-		return "server.ban";
-	}
-	
-	@Override
-	public String getDescription() {
-		return "Bans a user. (/ban <username> [seconds] [reason])";
-	}
-	
-	@Override
-	public int getMinArgNumber() {
-		return 1;
+		Server.ban(bn);
 	}
 	
 }

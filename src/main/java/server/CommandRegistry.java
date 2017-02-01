@@ -1,26 +1,41 @@
 package server;
 
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Stream;
 
-import common.Command;
-import util.ClassFinder;
-import util.StringArrays;
+import org.reflections.Reflections;
 
-public class CommandRegistry extends HashMap<String, Command> {
+import common.MessagePacket;
+import common.MessagePacket.MessageType;
+import server.command.Command;
+import server.command.CommandInfo;
+import util.ArrayUtil;
+
+public class CommandRegistry  {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+	private Map<String, Command> commands = new HashMap<>();
 	
-	public CommandRegistry(String commandPackage) {
-		List<Class<?>> classes = ClassFinder.find(commandPackage);
+	private static final String COMMAND_PACKAGE = "server.command";
+	
+	public CommandRegistry() {
+		Reflections reflections = new Reflections(COMMAND_PACKAGE);
+		Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(CommandInfo.class);
 		
-		for (Class<?> comm: classes) {
+		for (Class<?> comm: annotated) {
 			try {
-				Command commInstance = (Command) comm.newInstance();
-				put(commInstance.getName(), commInstance);
+				CommandInfo c = comm.getAnnotation(CommandInfo.class);
+				
+				if (!Arrays.asList(comm.getInterfaces()).contains(Command.class)) {
+					// TODO Proper logging
+					System.err.println(comm.getName() + " is annoteded with " + CommandInfo.class.getName() + ", but does not implement" + Command.class.getName());
+					continue;
+				}
+				
+				commands.put(c.name(), (Command) comm.newInstance());
 			} catch (ClassCastException | InstantiationException | IllegalAccessException ex) {
 				ex.printStackTrace();
 			}
@@ -31,14 +46,15 @@ public class CommandRegistry extends HashMap<String, Command> {
 		String[] command = commandStr.substring(1).split(" ");
 		
 		Command comm;
-		if ((comm = get(command[0])) != null) // Get the command
-			if (caller.hasPermission(comm.getPermission())) { // Check if the client has permission
-				String[] args = StringArrays.removeFirst(command);
-				if (args.length >= comm.getMinArgNumber()) { // Check the number of arguments
+		if ((comm = commands.get(command[0])) != null) { // Get the command
+			CommandInfo info = comm.getClass().getAnnotation(CommandInfo.class);
+			if (caller.hasPermission(info.permission())) { // Check if the client has permission
+				String[] args = ArrayUtil.removeFirst(command);
+				if (args.length >= info.minArg()) { // Check the number of arguments
 					try {
 						comm.execute(args, caller); // Execute command
 					} catch (Exception e) {
-						caller.send("Error while executing command!");
+						caller.send(new MessagePacket("Error while executing command!", MessageType.ERROR));
 						e.printStackTrace();
 					}
 					return;
@@ -50,8 +66,19 @@ public class CommandRegistry extends HashMap<String, Command> {
 				caller.send("Not enough permissions!");
 				return;
 			}
-		else
+		} else
 			caller.send("No such command! Type '/help' for a list of commands.");
+	}
+	
+	public String getHelp() {
+		StringBuilder help = new StringBuilder();
+		help.append("Help for all commands:" + "\n");
+		
+		Stream<Entry<String, Command>> stream = commands.entrySet().stream();
+		
+		stream.map(c -> c.getValue().getClass().getAnnotation(CommandInfo.class)).map((a) -> a.name() + ": " + "\t" + a.desc() + "\n").forEach(help::append);
+		
+		return help.toString();
 	}
 	
 }

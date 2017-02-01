@@ -1,38 +1,18 @@
 package server.command;
 
+import common.MessagePacket;
+import server.Channel;
 import server.Client;
 import server.Server;
 
-import common.Command;
-import common.MessagePacket;
-
-public class CreateChannel extends Command {
+@CommandInfo(desc = "Creates a channel with specified settings. (/createchannel <name>)", name = "create", permission = "admin.create.channel", minArg = 1)
+public class CreateChannel implements Command {
 	
 	@Override
 	public void execute(String[] args, Client caller) throws Exception {
-		Server.channels.add(new server.Channel(args[0]));
+		Server.getChannels().add(new Channel(args[0]));
 		
 		Server.wideBroadcast(new MessagePacket("Channel " + args[0] + " is now available. Use '/join " + args[0] + "' to join."));
-	}
-	
-	@Override
-	public String getName() {
-		return "createchannel";
-	}
-	
-	@Override
-	public String getPermission() {
-		return "server.createchannel";
-	}
-	
-	@Override
-	public String getDescription() {
-		return "Creates a channel with specified settings. (/createchannel <name>)";
-	}
-	
-	@Override
-	public int getMinArgNumber() {
-		return 1;
 	}
 	
 }
