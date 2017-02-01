@@ -22,7 +22,7 @@ public class Server {
 	private static Properties prop = new Properties();
 	private static File propFile = new File("server.properties");
 	private static int port, maxUsers;
-	private static final String version = "0.3";
+	private static final String version = "4.0";
 
 	private static ArrayList<BanNote> banNotes = new ArrayList<BanNote>();
 	private static ArrayList<Channel> channels = new ArrayList<Channel>();

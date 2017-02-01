@@ -10,9 +10,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>eu.tankernn</groupId>
-	<artifactId>eu.tankernn.chat</artifactId>
-	<version>3.1-SNAPSHOT</version>
+	<groupId>eu.tankernn.chat</groupId>
+	<artifactId>tankernn-chat</artifactId>
+	<version>4.0</version>
 	<packaging>jar</packaging>
 
 	<name>TankernnChat</name>
@@ -33,7 +33,7 @@
 	</dependencies>
 
 	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
+		<finalName>${project.artifactId}-${project.version}.${build.number}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -63,7 +63,53 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<appendAssemblyId>false</appendAssemblyId>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>Client</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>${project.build.finalName}-client</finalName>
+							<archive>
+								<manifest>
+									<mainClass>client.ChatClient</mainClass>
+								</manifest>
+							</archive>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Server</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>${project.build.finalName}-server</finalName>
+							<archive>
+								<manifest>
+									<mainClass>server.Server</mainClass>
+								</manifest>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
+	<properties>
+		<build.number>SNAPSHOT</build.number>
+	</properties>
 </project>
