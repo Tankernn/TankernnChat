@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.time.LocalDateTime;
 
@@ -17,136 +18,144 @@ import common.Packet;
 
 public class Client implements ActionListener {
 	ReadUser readuser;
-	
+
 	BufferedReader in;
 	ObjectOutputStream objOut;
-	
-	public String username;
+
+	public final String username;
 	public Socket sock;
-	
+
 	public String[] permissions;
 	public boolean isOP = false;
-	
+
 	int messLastPeriod = 0;
 	Timer timer = new Timer(800, this);
-	
-	public Channel primaryChannel = Server.channels.get(0);
-	
-	public Client(Socket s) {
-		sock = s;
+
+	public Channel primaryChannel = Server.getChannels().get(0);
+
+	public Client(Socket socket) {
+		sock = socket;
 		
+		String line = null;
 		try {
-			in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			objOut = new ObjectOutputStream(sock.getOutputStream());
-			username = in.readLine();
+			in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+			line = in.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
+		username = line;
+
 		if (!validateUser()) {
 			disconnect(false);
 			throw new IllegalArgumentException();
 		}
-		
-		permissions = new String[] {"noob.*"};
-		
-		send(new MessagePacket("Welcome to the server! Enjoy your stay!"));
-		
+
+		permissions = new String[] { "user.*" };
+
+		send(new MessagePacket("Welcome to the server, " + username + "! Enjoy your stay!"));
+
 		readuser = new ReadUser();
-		
+
 		timer.start();
 	}
-	
-	public Client() {}
-	
+
+	public Client(String username) {
+		this.username = username;
+	}
+
 	private boolean validateUser() {
-		//No spaces
+		// No spaces
 		if (username.contains(" ")) {
 			send("No spaces in usernames please!");
 			return false;
 		}
-		
-		//Not same username as anyone else
-		if (Server.clients.getClientByName(username).isPresent()) {
+
+		// Not same username as anyone else
+		if (Server.getClients().getClientByName(username).isPresent()) {
 			send("Username already taken!");
 			return false;
 		}
-		
-		//No connect if banned
-		for (BanNote note: Server.banNotes)
-			if (note.ip.equals(sock.getInetAddress().toString())) {
-				if (note.expiry == null) {
-					send(note.toString());
-					return false;
-				} else if (note.expiry.isBefore(LocalDateTime.now())) {
-					Server.banNotes.remove(note);
-					return true;
-				} else {
-					send(note.toString());
-					return false;
+
+		// No connect if banned
+		for (BanNote note : Server.getBanned())
+			try {
+				if (note.ip.equals(getIP())) {
+					if (note.expiry == null) {
+						send(note.toString());
+						return false;
+					} else if (note.expiry.isBefore(LocalDateTime.now())) {
+						Server.getBanned().remove(note);
+						return true;
+					} else {
+						send(note.toString());
+						return false;
+					}
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		return true;
 	}
-	
+
 	public void disconnect(boolean output) {
-		if (!isConnected()) //Already disconnected
+		if (!isConnected()) // Already disconnected
 			return;
-		
+
 		if (timer.isRunning())
 			timer.stop();
-		
+
 		if (readuser != null)
 			readuser.interrupt();
-		
+
 		try {
 			sock.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		Server.cleanUp();
-		
+
 		if (output)
 			Server.wideBroadcast(new MessagePacket(username + " has disconnected."));
 	}
-	
+
 	public void disconnect() {
 		disconnect(true);
 	}
-	
+
 	public boolean isConnected() {
-		return !sock.isClosed();
+		return sock.isConnected() && !sock.isClosed();
 	}
-	
+
 	public boolean hasPermission(String commandPermission) {
 		if (this.isOP)
 			return true;
-		
+
 		for (int i = 0; i < permissions.length; i++) {
-			if (commandPermission.startsWith(permissions[i].replace(".*", ".")) || commandPermission.equalsIgnoreCase(permissions[i]) || permissions[i].equalsIgnoreCase("*"))
+			if (commandPermission.startsWith(permissions[i].replace(".*", "."))
+					|| commandPermission.equalsIgnoreCase(permissions[i]) || permissions[i].equalsIgnoreCase("*"))
 				return true;
 		}
 		return false;
 	}
-	
+
 	class ReadUser extends Thread {
 		ReadUser() {
-			super(Client.this.username);
+			super(Client.this.username + " listener thread");
 			this.start();
 		}
-		
+
 		@Override
 		public void run() {
 			String mess;
-			while (!readuser.isInterrupted() && (mess = getNewMessage()) != null) {
-				
-				if (mess.startsWith("/")) //Command handling
-					Server.commReg.executeCommand(mess, Client.this);
-				else //Normal message handling
+			while (!isInterrupted() && (mess = getNewMessage()) != null) {
+
+				if (mess.startsWith("/")) // Command handling
+					Server.getCommReg().executeCommand(mess, Client.this);
+				else // Normal message handling
 				{
 					messLastPeriod++;
-					if (messLastPeriod > 1 && !(Client.this instanceof LocalClient)) {
+					if (messLastPeriod > 1 && !(Client.this.hasPermission("mod.spam"))) {
 						send("No spamming!");
 						disconnect(false);
 					} else
@@ -155,27 +164,27 @@ public class Client implements ActionListener {
 			}
 			disconnect();
 		}
-		
+
 		public String getNewMessage() {
 			try {
 				return in.readLine();
 			} catch (IOException e) {
 				disconnect();
+				return null;
 			}
-			return null;
 		}
 	}
-	
 
-	
 	/**
 	 * Sends a packet to the user.
 	 * 
-	 * @param pack Packet to send to the user
+	 * @param pack
+	 *            Packet to send to the user
 	 */
 	public void send(Packet pack) {
 		try {
 			objOut.writeObject(pack);
+			objOut.flush();
 			objOut.writeObject(InfoPacket.of(this));
 			objOut.flush();
 		} catch (IOException e) {
@@ -183,20 +192,20 @@ public class Client implements ActionListener {
 				disconnect();
 		}
 	}
-	
+
 	public void send(String message) {
 		send(new MessagePacket(message));
 	}
-	
-	public String getIP() {
-		return sock.getInetAddress().toString();
+
+	public String getIP() throws IOException {
+		return ((InetSocketAddress) sock.getRemoteSocketAddress()).getAddress().getHostAddress();
 	}
-	
+
 	@Override
 	public String toString() {
 		return username;
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		messLastPeriod = 0;

@@ -9,12 +9,14 @@ import common.Packet;
 
 public class LocalClient extends Client {
 	
-	public LocalClient() { //Constructor for local client, the server, with full permissions
+	/**
+	 * Constructor for local client, the server, with full permissions
+	 */
+	public LocalClient() {
+		super("SERVER");
 		in = new BufferedReader(new InputStreamReader(System.in));
 		
-		this.isOP = true;
-		
-		username = "SERVER";
+		isOP = true;
 		permissions = new String[] {"*"};
 		
 		readuser = new ReadUser();
@@ -44,6 +46,6 @@ public class LocalClient extends Client {
 	@Override
 	public void send(String message) {
 		System.out.println(message.toString());
-		Server.log.log(message.toString());
+		Server.getLogger().log(message.toString());
 	}
 }

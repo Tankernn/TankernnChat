@@ -1,40 +1,57 @@
 package server;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
-import util.Logger;
-import util.ServerProperties;
 import common.MessagePacket;
+import util.Logger;
 
 public class Server {
-	static ServerProperties prop = new ServerProperties();
-	static int port, maxUsers;
-	static final String version = "0.3";
-	
-	public static ArrayList<BanNote> banNotes = new ArrayList<BanNote>();
-	public static ArrayList<Channel> channels;
-	public static ClientCollection clients;
-	
-	static ServerSocket so;
-	public static LocalClient OPClient;
-	public static Logger log;
-	public static CommandRegistry commReg;
-	
+	private static Thread clientListener;
+	private static Properties prop = new Properties();
+	private static File propFile = new File("server.properties");
+	private static int port, maxUsers;
+	private static final String version = "0.3";
+
+	private static ArrayList<BanNote> banNotes = new ArrayList<BanNote>();
+	private static ArrayList<Channel> channels = new ArrayList<Channel>();
+	private static ClientCollection clients;
+
+	private static ServerSocket so;
+	private static LocalClient OPClient;
+	private static Logger log;
+	private static CommandRegistry commandRegistry;
+
 	public static void main(String[] arg) {
 		System.out.println("Starting ChatServer version " + version + "...");
-		
+
 		System.out.print("Loadning properties file...");
-		prop.loadProperties();
+		try {
+			prop.load(new FileReader(propFile));
+		} catch (FileNotFoundException e1) {
+			try {
+				prop.load(Server.class.getResourceAsStream("/" + propFile.getName()));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		System.out.println("Done");
-		
+
 		System.out.print("Reading numbers from properties object...");
-		port = prop.getNumberProperty("port");
-		maxUsers = prop.getNumberProperty("maxUsers");
+		port = Integer.parseInt(prop.getProperty("port"));
+		maxUsers = Integer.parseInt(prop.getProperty("maxUsers"));
 		System.out.println("Done");
-		
+
 		System.out.print("Setting up socket...");
 		try {
 			so = new ServerSocket(port);
@@ -43,19 +60,18 @@ public class Server {
 			System.exit(0);
 		}
 		System.out.println("Done");
-		
+
 		clients = new ClientCollection();
-		channels = new ArrayList<Channel>();
-		channels.add(new Channel("Main"));
-		
+		getChannels().add(new Channel("Main"));
+
 		System.out.print("Starting commandhandler...");
 		commandRegistry = new CommandRegistry();
 		System.out.println("Done");
-		
+
 		System.out.print("Creating virtual local client...");
 		OPClient = new LocalClient();
 		System.out.println("Done");
-		
+
 		System.out.print("Starting logger...");
 		try {
 			log = new Logger();
@@ -66,22 +82,25 @@ public class Server {
 			return;
 		}
 		System.out.println("Done");
-		
+
+		System.out.print("Starting client listener thread...");
+		clientListener = new Thread(Server::listenClients);
+		clientListener.start();
+		System.out.println("Done");
+
 		System.out.println("Server started successfully!");
-		
-		getClients();
 	}
-	
-	static void getClients() {
+
+	static void listenClients() {
 		while (!so.isClosed()) {
 			Client newClient = null;
 			try {
-				newClient = new Client(Server.so.accept());
+				newClient = new Client(so.accept());
 				clients.add(newClient);
-				channels.get(0).add(newClient);
+				getChannels().get(0).add(newClient);
 				wideBroadcast(new MessagePacket(newClient.username + " has connected."));
 			} catch (IllegalArgumentException ex) {
-				
+
 			} catch (ArrayIndexOutOfBoundsException ex) {
 				newClient.send(new MessagePacket("Server full!"));
 				newClient.disconnect(false);
@@ -94,53 +113,89 @@ public class Server {
 			}
 		}
 	}
-	
+
 	public static Optional<Channel> getChannelByName(String name) throws NullPointerException {
-		return channels.stream().filter(c -> c.name.equals(name)).findFirst();
+		return getChannels().stream().filter(c -> c.name.equals(name)).findFirst();
 	}
-	
+
 	public static void wideBroadcast(MessagePacket mess) {
-		clients.broadcast(mess);
+		getClients().broadcast(mess);
 	}
-	
+
 	public static String[] getUsersOnline() {
-		return clients.getUsernameArray();
+		return getClients().getUsernameArray();
 	}
-	
-	public static String listClients(char c) {
-		return clients.listClients(c);
+
+	public static String listClients(CharSequence c) {
+		return getClients().listClients(c);
 	}
-	
+
 	public static Optional<Client> getUserByName(String username) {
-		return clients.getClientByName(username);
+		return getClients().getClientByName(username);
 	}
-	
+
+	public static void ban(BanNote ban) {
+		banNotes.add(ban);
+	}
+
 	/**
 	 * Removes disconnected clients from all collections on the server.
 	 */
 	public static void cleanUp() {
-		clients.cleanUp();
-		channels.forEach(c -> c.cleanUp());
+		getClients().cleanUp();
+		getChannels().forEach(c -> c.cleanUp());
 	}
-	
+
 	/**
 	 * Disconnects all users and closes log and socket.
 	 */
 	public static void exit() {
 		wideBroadcast(new MessagePacket("Shutting down server!"));
-		
-		for (int i = 0; i < clients.size(); i++)
-			//Has to be done with number iteration, otherwise unsafe
-			clients.get(i).disconnect();
-		
-		log.close();
-		
-		OPClient.disconnect();
-		
+
 		try {
 			so.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		clientListener.interrupt();
+
+		clients.disconnectAll();
+		getOPClient().disconnect();
+
+		log.close();
+		try {
+			prop.store(new PrintWriter(propFile), "ChatServer config file");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	}
+
+	public static int getMaxUsers() {
+		return maxUsers;
+	}
+
+	public static LocalClient getOPClient() {
+		return OPClient;
+	}
+
+	public static Logger getLogger() {
+		return log;
+	}
+
+	public static ArrayList<Channel> getChannels() {
+		return channels;
+	}
+
+	public static ClientCollection getClients() {
+		return clients;
+	}
+
+	public static CommandRegistry getCommReg() {
+		return commandRegistry;
+	}
+
+	public static List<BanNote> getBanned() {
+		return banNotes;
+	}
+
 }

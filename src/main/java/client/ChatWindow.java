@@ -39,107 +39,108 @@ import common.MessagePacket.MessageType;
 public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyListener {
 	Thread getMessages;
 	static File confFile = new File("client.properties");
-	
+
 	String adress, username;
 	ArrayList<String> lastMess = new ArrayList<String>();
 	int port, messIndex = 0;
-	
-	Socket so = new Socket();
+
+	Socket so;
 	ObjectInputStream objIn;
 	PrintWriter out;
-	
+
 	GridBagLayout g = new GridBagLayout();
 	GridBagConstraints con = new GridBagConstraints();
-	
+
 	JPanel right = new JPanel();
 	JLabel infoLabel = new JLabel("Users online:");
 	DefaultListModel<String> model = new DefaultListModel<String>();
 	JList<String> userList = new JList<String>(model);
 	JButton reconnect = new JButton("Reconnect");
-	
+
 	Console chat = new Console();
 	JScrollPane scroll = new JScrollPane(chat);
 	JTextField write = new JTextField();
-	
+
 	public ChatWindow(String adress, int port, String username) {
 		this.adress = adress;
 		this.port = port;
 		this.username = username;
-		
-		//List config
+
+		// List config
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		userList.setLayoutOrientation(JList.VERTICAL);
-		//Label config
+		// Label config
 		infoLabel.setHorizontalAlignment(JLabel.CENTER);
 		infoLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		//Layout config
+		// Layout config
 		right.setLayout(g);
 		con.fill = GridBagConstraints.HORIZONTAL;
 		con.weightx = 1;
 		con.gridx = 0;
-		
+
 		right.add(infoLabel, con);
-		
+
 		con.weighty = 1;
 		con.fill = GridBagConstraints.BOTH;
 		right.add(userList, con);
-		
+
 		con.weighty = 0;
 		con.fill = GridBagConstraints.HORIZONTAL;
 		right.add(reconnect, con);
-		
+
 		setLayout(new BorderLayout());
 		add(chat, BorderLayout.NORTH);
 		add(write, BorderLayout.SOUTH);
 		add(right, BorderLayout.EAST);
-		
-		//Scrollbar config
+
+		// Scrollbar config
 		add(scroll);
 		scroll.setMinimumSize(new Dimension(100, 100));
 		scroll.setViewportView(chat);
 		scroll.setSize(500, 130);
-		
-		//Listener config
+
+		// Listener config
 		reconnect.addActionListener(this);
 		write.addKeyListener(this);
-		
-		//Window config
+
+		// Window config
 		this.setLocation(new Point(100, 100));
 		setSize(600, 600);
 		setVisible(true);
 		setTitle("Chat on " + adress + " | Username: " + username);
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		
+
 		connect(adress, port, username);
 	}
-	
+
 	public void send(String text) {
-		if (so.isConnected() && !so.isClosed())
+		if (so.isConnected() && !so.isClosed()) {
 			out.println(text);
-		else {
+			out.flush();
+		} else {
 			chat.log(new MessagePacket("Not connected to server!", MessageType.WARNING));
 			write.setEnabled(false);
 		}
 	}
-	
+
 	void connect(String address, int port, String username) {
 		chat.log(new MessagePacket("Connecting to " + address + " on port " + port + ".", MessageType.INFO));
 		if (getMessages != null)
 			getMessages.interrupt();
-		
+
 		try {
 			so.close();
 			objIn.close();
 			out.close();
 		} catch (NullPointerException ex) {
-			//Nothing
+			// Nothing
 		} catch (IOException ex) {
 			chat.log(new MessagePacket(ex.toString(), MessageType.ERROR));
 		}
-		
+
 		try {
 			so = new Socket();
-			so.connect(new InetSocketAddress(address, port), 1000);
+			so.connect(new InetSocketAddress(address, port));
 			objIn = new ObjectInputStream(so.getInputStream());
 			out = new PrintWriter(so.getOutputStream(), true);
 		} catch (SocketTimeoutException ex) {
@@ -149,21 +150,21 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 			chat.log(new MessagePacket(e.toString(), MessageType.ERROR));
 			return;
 		}
-		
-		send(username); //First packet sent to server sets username
-		
+
+		send(username); // First packet sent to server sets username
+
 		getMessages = new Thread(this);
 		getMessages.start();
-		
+
 		write.setEnabled(true);
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(reconnect))
 			connect(adress, port, username);
 	}
-	
+
 	@Override
 	public void run() {
 		try {
@@ -171,12 +172,14 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 		} catch (EOFException eof) {
 			chat.log(new MessagePacket(eof.toString() + " Disconnected from host.", MessageType.ERROR));
 		} catch (ClassNotFoundException cnf) {
-			chat.log(new MessagePacket("The message recieved from the server could not be understood. Are you using the right version?", MessageType.ERROR));
+			chat.log(new MessagePacket(
+					"The message recieved from the server could not be understood. Are you using the right version?",
+					MessageType.ERROR));
 		} catch (IOException e) {
 			chat.log(new MessagePacket(e.toString(), MessageType.ERROR));
 		}
 	}
-	
+
 	public void getMessages() throws IOException, ClassNotFoundException {
 		while (!getMessages.isInterrupted()) {
 			Object fromServer = objIn.readObject();
@@ -185,22 +188,21 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 				chat.log(mess);
 			} else if (fromServer instanceof InfoPacket) {
 				InfoPacket info = (InfoPacket) fromServer;
-				
+
 				infoLabel.setText("<html>" + info.toString().replace("\n", "<br>"));
-				
+
 				model = new DefaultListModel<String>();
-				for (String user: info.usersOnline)
+				for (String user : info.usersOnline)
 					model.addElement(user);
-				
+
 				userList.setModel(model);
-			}
-			else if (fromServer instanceof String) {
+			} else if (fromServer instanceof String) {
 				chat.log(new MessagePacket((String) fromServer, MessageType.NORMAL));
 			} else
 				throw new ClassNotFoundException();
 		}
 	}
-	
+
 	@Override
 	public void keyPressed(KeyEvent eKey) {
 		int keyCode = eKey.getKeyCode();
@@ -231,10 +233,12 @@ public class ChatWindow extends JFrame implements ActionListener, Runnable, KeyL
 			break;
 		}
 	}
-	
+
 	@Override
-	public void keyReleased(KeyEvent arg0) {}
-	
+	public void keyReleased(KeyEvent arg0) {
+	}
+
 	@Override
-	public void keyTyped(KeyEvent arg0) {}
+	public void keyTyped(KeyEvent arg0) {
+	}
 }
