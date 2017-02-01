@@ -8,7 +8,7 @@ import server.Server;
 import common.MessagePacket;
 import common.MessagePacket.MessageType;
 
-@CommandInfo(desc = "Lists all users online. (/list [channel])", name = "list", permission = "noob.list")
+@CommandInfo(desc = "Lists all users online. (/list [channel])", name = "list", permission = "user.list")
 public class List implements Command {
 
 	@Override

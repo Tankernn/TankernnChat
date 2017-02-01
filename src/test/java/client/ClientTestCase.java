@@ -1,6 +1,6 @@
 package client;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -19,7 +19,7 @@ public class ClientTestCase {
 	@Test
 	public void testSend() {
 		user1.send("Hello!");
-		assertTrue(user1.so.isConnected());
+		assertFalse(user1.so.isClosed());
 	}
 
 	@Test

@@ -57,7 +57,7 @@ public class MessagePacket implements Packet {
 
 		switch (messType) {
 		case COMMAND:
-			StyleConstants.setForeground(style, Color.GREEN);
+			StyleConstants.setForeground(style, Color.MAGENTA);
 			break;
 		case ERROR:
 			StyleConstants.setForeground(style, Color.RED);
