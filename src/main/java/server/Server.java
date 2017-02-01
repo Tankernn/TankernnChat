@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import common.MessagePacket;
-import util.Logger;
 
 public class Server {
 	private static Thread clientListener;
@@ -28,68 +30,56 @@ public class Server {
 
 	private static ServerSocket so;
 	private static LocalClient OPClient;
-	private static Logger log;
+	private static final Logger log = Logger.getGlobal();
 	private static CommandRegistry commandRegistry;
 
 	public static void main(String[] arg) {
-		System.out.println("Starting ChatServer version " + version + "...");
+		try {
+			LogManager.getLogManager().readConfiguration(Server.class.getResourceAsStream("/logger.properties"));
+		} catch (SecurityException | IOException e2) {
+			log.log(Level.SEVERE, e2.getMessage(), e2);
+		}
+		log.info("Starting ChatServer version " + version + "...");
 
-		System.out.print("Loadning properties file...");
+		log.fine("Loadning properties file...");
 		try {
 			prop.load(new FileReader(propFile));
 		} catch (FileNotFoundException e1) {
 			try {
 				prop.load(Server.class.getResourceAsStream("/" + propFile.getName()));
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			log.log(Level.SEVERE, e1.getMessage(), e1);
 		}
-		System.out.println("Done");
 
-		System.out.print("Reading numbers from properties object...");
+		log.fine("Reading numbers from properties object...");
 		port = Integer.parseInt(prop.getProperty("port"));
 		maxUsers = Integer.parseInt(prop.getProperty("maxUsers"));
-		System.out.println("Done");
 
-		System.out.print("Setting up socket...");
+		log.fine("Setting up socket...");
 		try {
 			so = new ServerSocket(port);
 		} catch (IOException ex) {
-			System.out.println("Error setting up socket. Server already running?");
-			System.exit(0);
+			log.log(Level.SEVERE, "Error setting up socket. Server already running?", ex);
+			return;
 		}
-		System.out.println("Done");
 
 		clients = new ClientCollection();
 		getChannels().add(new Channel("Main"));
 
-		System.out.print("Starting commandhandler...");
+		log.fine("Starting commandhandler...");
 		commandRegistry = new CommandRegistry();
-		System.out.println("Done");
 
-		System.out.print("Creating virtual local client...");
+		log.fine("Creating virtual local client...");
 		OPClient = new LocalClient();
-		System.out.println("Done");
 
-		System.out.print("Starting logger...");
-		try {
-			log = new Logger();
-		} catch (IOException e) {
-			System.out.println();
-			System.out.println("Unable to start logger.");
-			e.printStackTrace();
-			return;
-		}
-		System.out.println("Done");
-
-		System.out.print("Starting client listener thread...");
+		log.fine("Starting client listener thread...");
 		clientListener = new Thread(Server::listenClients);
 		clientListener.start();
-		System.out.println("Done");
 
-		System.out.println("Server started successfully!");
+		log.info("Server started successfully!");
 	}
 
 	static void listenClients() {
@@ -111,8 +101,7 @@ public class Server {
 				if (so.isClosed())
 					return;
 			} catch (Exception ex) {
-				System.out.println("Could not get new client!");
-				ex.printStackTrace();
+				log.log(Level.WARNING, "Could not get new client!", ex);
 			}
 		}
 	}
@@ -165,7 +154,6 @@ public class Server {
 		clients.disconnectAll();
 		getOPClient().disconnect();
 
-		log.close();
 		try {
 			prop.store(new PrintWriter(propFile), "ChatServer config file");
 		} catch (IOException e1) {

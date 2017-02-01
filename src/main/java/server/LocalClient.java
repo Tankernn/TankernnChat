@@ -40,12 +40,11 @@ public class LocalClient extends Client {
 	@Override
 	public void send(Packet pack) {
 		if (pack instanceof MessagePacket)
-			send(pack.toString());
+			send(((MessagePacket) pack).toString(false));
 	}
 	
 	@Override
 	public void send(String message) {
-		System.out.println(message.toString());
-		Server.getLogger().log(message.toString());
+		Server.getLogger().info(message);
 	}
 }

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import org.reflections.Reflections;
@@ -16,7 +17,7 @@ import server.command.CommandInfo;
 import util.ArrayUtil;
 
 public class CommandRegistry  {
-	
+	private static final Logger LOG = Logger.getLogger(CommandRegistry.class.getName());
 	private Map<String, Command> commands = new HashMap<>();
 	
 	private static final String COMMAND_PACKAGE = "server.command";
@@ -31,7 +32,7 @@ public class CommandRegistry  {
 				
 				if (!Arrays.asList(comm.getInterfaces()).contains(Command.class)) {
 					// TODO Proper logging
-					System.err.println(comm.getName() + " is annoteded with " + CommandInfo.class.getName() + ", but does not implement" + Command.class.getName());
+					LOG.warning(comm.getName() + " is annoteded with " + CommandInfo.class.getName() + ", but does not implement" + Command.class.getName());
 					continue;
 				}
 				

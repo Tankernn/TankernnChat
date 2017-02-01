@@ -34,7 +34,7 @@ public class ClientCollection {
 		if (mess.validate()) {
 			for (Client c : clients)
 				c.send(mess);
-			Server.getOPClient().send(mess.toString());
+			Server.getOPClient().send(mess);
 		}
 	}
 
