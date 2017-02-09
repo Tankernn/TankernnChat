@@ -16,6 +16,18 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import eu.tankernn.chat.common.MessagePacket;
+import eu.tankernn.chat.common.Packet;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.string.StringDecoder;
 
 public class Server {
 	private static Thread clientListener;
@@ -76,7 +88,7 @@ public class Server {
 		OPClient = new LocalClient();
 
 		log.fine("Starting client listener thread...");
-		clientListener = new Thread(Server::listenClients);
+		clientListener = new Thread(Server::run);
 		clientListener.start();
 
 		log.info("Server started successfully!");
@@ -103,6 +115,37 @@ public class Server {
 			} catch (Exception ex) {
 				log.log(Level.WARNING, "Could not get new client!", ex);
 			}
+		}
+	}
+
+	private static void run() {
+		EventLoopGroup bossGroup = new NioEventLoopGroup();
+		EventLoopGroup workerGroup = new NioEventLoopGroup();
+		try {
+			ServerBootstrap b = new ServerBootstrap();
+			b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+					.childHandler(new ChannelInitializer<SocketChannel>() {
+						@Override
+						public void initChannel(SocketChannel ch) throws Exception {
+							ch.pipeline().addLast("decoder", new StringDecoder());
+							ch.pipeline().addLast("encoder", new ObjectDecoder(ClassResolvers.weakCachingResolver(Packet.class.getClassLoader())));
+							ch.pipeline().addLast("handler", new ChatServerHandler());
+						}
+					}).option(ChannelOption.SO_BACKLOG, 128).childOption(ChannelOption.SO_KEEPALIVE, true);
+
+			// Bind and start to accept incoming connections.
+			ChannelFuture f = b.bind(port).sync();
+
+			// Wait until the server socket is closed.
+			// In this example, this does not happen, but you can do that to
+			// gracefully
+			// shut down your server.
+			f.channel().closeFuture().sync();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			workerGroup.shutdownGracefully();
+			bossGroup.shutdownGracefully();
 		}
 	}
 
