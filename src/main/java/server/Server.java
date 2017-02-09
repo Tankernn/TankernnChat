@@ -152,7 +152,7 @@ public class Server {
 		clientListener.interrupt();
 
 		clients.disconnectAll();
-		getOPClient().disconnect();
+		getLocalClient().disconnect();
 
 		try {
 			prop.store(new PrintWriter(propFile), "ChatServer config file");
@@ -165,7 +165,7 @@ public class Server {
 		return maxUsers;
 	}
 
-	public static LocalClient getOPClient() {
+	public static LocalClient getLocalClient() {
 		return OPClient;
 	}
 

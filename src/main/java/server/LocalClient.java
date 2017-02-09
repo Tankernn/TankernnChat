@@ -1,8 +1,8 @@
 package server;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 import common.MessagePacket;
 import common.Packet;
@@ -13,28 +13,12 @@ public class LocalClient extends Client {
 	 * Constructor for local client, the server, with full permissions
 	 */
 	public LocalClient() {
-		super("SERVER");
-		in = new BufferedReader(new InputStreamReader(System.in));
-		
-		isOP = true;
-		permissions = new String[] {"*"};
-		
-		readuser = new ReadUser();
-	}
-	
-	@Override
-	public void disconnect() {
-		readuser.interrupt();
-		try {
-			in.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		super("SERVER", Arrays.asList(new String[] {"*"}), new BufferedReader(new InputStreamReader(System.in)), null);
 	}
 	
 	@Override
 	public void disconnect(boolean bool) {
-		disconnect();
+		disconnect(false);
 	}
 	
 	@Override

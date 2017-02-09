@@ -10,7 +10,7 @@ import common.MessagePacket;
  * A collection of clients.
  */
 public class ClientCollection {
-	
+
 	private List<Client> clients = new CopyOnWriteArrayList<>();
 
 	/**
@@ -32,9 +32,8 @@ public class ClientCollection {
 	 */
 	public synchronized void broadcast(MessagePacket mess) {
 		if (mess.validate()) {
-			for (Client c : clients)
-				c.send(mess);
-			Server.getOPClient().send(mess);
+			clients.forEach(c -> c.send(mess));
+			Server.getLocalClient().send(mess);
 		}
 	}
 
@@ -44,7 +43,7 @@ public class ClientCollection {
 	 * 
 	 * @param user
 	 *            User to be added to collection.
-	 * @return 
+	 * @return
 	 */
 	public void add(Client user) {
 		if (clients.contains(user))
@@ -97,9 +96,9 @@ public class ClientCollection {
 	 * @see String
 	 */
 	public String[] getUsernameArray() {
-		return clients.stream().map(c -> c.username).toArray(i -> new String[i]);
+		return clients.stream().map(c -> c.username).toArray(String[]::new);
 	}
-	
+
 	public void disconnectAll() {
 		clients.forEach(c -> c.disconnect());
 	}

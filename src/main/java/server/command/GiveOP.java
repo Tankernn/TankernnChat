@@ -12,7 +12,7 @@ public class GiveOP implements Command {
 	public void execute(String[] args, Client caller) throws Exception {
 		try {
 			Client target = Server.getUserByName(args[0]).get();
-			target.isOP = true;
+			target.addPermission("*");
 			target.send(new MessagePacket("You are now OP.", MessageType.INFO));
 		} catch (NullPointerException ex) {
 			caller.send(new MessagePacket("No such user: " + args[0], MessageType.WARNING));

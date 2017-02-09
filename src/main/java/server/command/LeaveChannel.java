@@ -13,7 +13,7 @@ public class LeaveChannel implements Command {
 
 	@Override
 	public void execute(String[] args, Client caller) throws Exception {
-		if (caller.equals(Server.getOPClient())) {
+		if (caller.equals(Server.getLocalClient())) {
 			caller.send("Client-only command.");
 			return;
 		}
@@ -23,10 +23,10 @@ public class LeaveChannel implements Command {
 
 		try {
 			selectedChannel.remove(caller);
-			if (caller.primaryChannel.equals(selectedChannel))
-				caller.primaryChannel = Server.getChannels().get(0);
+			if (caller.getPrimaryChannel().equals(selectedChannel))
+				caller.setPrimaryChannel(Server.getChannels().get(0));
 			caller.send(new MessagePacket("You left channel " + args[0] + ".", MessageType.COMMAND));
-			caller.send(new MessagePacket("You are now speaking in channel " + caller.primaryChannel.name + ".",
+			caller.send(new MessagePacket("You are now speaking in channel " + caller.getPrimaryChannel().name + ".",
 					MessageType.COMMAND));
 		} catch (NullPointerException ex) {
 			caller.send(new MessagePacket("No channel named " + args[0] + ".", MessageType.ERROR));

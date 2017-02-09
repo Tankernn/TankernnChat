@@ -1,7 +1,5 @@
 package server;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,42 +7,42 @@ import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.time.LocalDateTime;
-
-import javax.swing.Timer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import common.InfoPacket;
 import common.MessagePacket;
 import common.Packet;
 
-public class Client implements ActionListener {
-	ReadUser readuser;
+public class Client implements Runnable {
+	protected Thread readuser = new Thread(this);
 
-	BufferedReader in;
-	ObjectOutputStream objOut;
+	protected BufferedReader in;
+	private ObjectOutputStream objOut;
+	private Socket sock;
 
 	public final String username;
-	public Socket sock;
+	protected List<String> permissions = new ArrayList<>();
 
-	public String[] permissions;
-	public boolean isOP = false;
+	private int messLastPeriod = 0;
+	private Timer timer = new Timer();
 
-	int messLastPeriod = 0;
-	Timer timer = new Timer(800, this);
-
-	public Channel primaryChannel = Server.getChannels().get(0);
+	private Channel primaryChannel = Server.getChannels().get(0);
 
 	public Client(Socket socket) {
 		sock = socket;
-		
+
 		String line = null;
 		try {
 			objOut = new ObjectOutputStream(sock.getOutputStream());
 			in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-			line = in.readLine();
+			line = in.readLine(); // First line contains username
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		username = line;
 
 		if (!validateUser()) {
@@ -52,17 +50,24 @@ public class Client implements ActionListener {
 			throw new IllegalArgumentException();
 		}
 
-		permissions = new String[] { "user.*" };
+		permissions.add("user.*");
 
 		send(new MessagePacket("Welcome to the server, " + username + "! Enjoy your stay!"));
 
-		readuser = new ReadUser();
-
-		timer.start();
+		readuser.start();
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				messLastPeriod = 0;
+			}
+		}, 800, 800);
 	}
 
-	public Client(String username) {
+	public Client(String username, List<String> permissions, BufferedReader in, ObjectOutputStream out) {
 		this.username = username;
+		this.permissions = permissions;
+		this.in = in;
+		this.objOut = out;
 	}
 
 	private boolean validateUser() {
@@ -103,14 +108,16 @@ public class Client implements ActionListener {
 		if (!isConnected()) // Already disconnected
 			return;
 
-		if (timer.isRunning())
-			timer.stop();
-
-		if (readuser != null)
-			readuser.interrupt();
+		timer.cancel();
+		readuser.interrupt();
 
 		try {
-			sock.close();
+			if (sock != null)
+				sock.close();
+			if (in != null)
+				in.close();
+			if (objOut != null)
+				objOut.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -128,50 +135,36 @@ public class Client implements ActionListener {
 	}
 
 	public boolean hasPermission(String commandPermission) {
-		if (this.isOP)
-			return true;
-
-		for (int i = 0; i < permissions.length; i++) {
-			if (commandPermission.startsWith(permissions[i].replace(".*", "."))
-					|| commandPermission.equalsIgnoreCase(permissions[i]) || permissions[i].equalsIgnoreCase("*"))
-				return true;
-		}
-		return false;
+		long correctPermissions = permissions.stream().filter(perm -> commandPermission.startsWith(perm.replace(".*", "."))
+				|| commandPermission.equalsIgnoreCase(perm) || perm.equalsIgnoreCase("*")).count();
+		return correctPermissions > 0;
 	}
 
-	class ReadUser extends Thread {
-		ReadUser() {
-			super(Client.this.username + " listener thread");
-			this.start();
-		}
-
-		@Override
-		public void run() {
-			String mess;
-			while (!isInterrupted() && (mess = getNewMessage()) != null) {
-
-				if (mess.startsWith("/")) // Command handling
-					Server.getCommReg().executeCommand(mess, Client.this);
-				else // Normal message handling
-				{
-					messLastPeriod++;
-					if (messLastPeriod > 1 && !(Client.this.hasPermission("mod.spam"))) {
-						send("No spamming!");
-						disconnect(false);
-					} else
-						primaryChannel.broadcast(new MessagePacket(Client.this.username, mess));
-				}
+	@Override
+	public void run() {
+		String mess;
+		while (!readuser.isInterrupted() && (mess = getNewMessage()) != null) {
+			if (mess.startsWith("/")) // Command handling
+				Server.getCommReg().executeCommand(mess, this);
+			else // Normal message handling
+			{
+				messLastPeriod++;
+				if (messLastPeriod > 1 && !hasPermission("mod.spam")) {
+					send("No spamming!");
+					disconnect(false);
+				} else
+					getPrimaryChannel().broadcast(new MessagePacket(Client.this.username, mess));
 			}
+		}
+		disconnect();
+	}
+
+	private String getNewMessage() {
+		try {
+			return in.readLine();
+		} catch (IOException e) {
 			disconnect();
-		}
-
-		public String getNewMessage() {
-			try {
-				return in.readLine();
-			} catch (IOException e) {
-				disconnect();
-				return null;
-			}
+			return null;
 		}
 	}
 
@@ -206,8 +199,19 @@ public class Client implements ActionListener {
 		return username;
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		messLastPeriod = 0;
+	public Channel getPrimaryChannel() {
+		return primaryChannel;
+	}
+
+	public List<String> getPermissions() {
+		return permissions;
+	}
+
+	public void addPermission(String string) {
+		permissions.add(string);
+	}
+
+	public void setPrimaryChannel(Channel primaryChannel) {
+		this.primaryChannel = primaryChannel;
 	}
 }

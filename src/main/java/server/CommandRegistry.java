@@ -31,7 +31,6 @@ public class CommandRegistry  {
 				CommandInfo c = comm.getAnnotation(CommandInfo.class);
 				
 				if (!Arrays.asList(comm.getInterfaces()).contains(Command.class)) {
-					// TODO Proper logging
 					LOG.warning(comm.getName() + " is annoteded with " + CommandInfo.class.getName() + ", but does not implement" + Command.class.getName());
 					continue;
 				}

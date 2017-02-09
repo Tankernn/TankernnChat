@@ -13,7 +13,7 @@ public class JoinChannel implements Command {
 
 	@Override
 	public void execute(String[] args, Client caller) {
-		if (caller.equals(Server.getOPClient())) {
+		if (caller.equals(Server.getLocalClient())) {
 			caller.send("Client-only command.");
 			return;
 		}
@@ -23,7 +23,7 @@ public class JoinChannel implements Command {
 
 		try {
 			selectedChannel.add(caller);
-			caller.primaryChannel = selectedChannel;
+			caller.setPrimaryChannel(selectedChannel);
 			caller.send(new MessagePacket("You are now speaking in channel " + args[0] + ".", MessageType.COMMAND));
 		} catch (NullPointerException ex) {
 			caller.send(new MessagePacket("No such channel!", MessageType.ERROR));
