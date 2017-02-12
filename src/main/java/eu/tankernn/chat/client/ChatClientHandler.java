@@ -5,7 +5,6 @@ import javax.swing.DefaultListModel;
 import eu.tankernn.chat.common.InfoPacket;
 import eu.tankernn.chat.common.MessagePacket;
 import eu.tankernn.chat.common.MessagePacket.MessageType;
-import eu.tankernn.chat.common.Packet;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -35,6 +34,5 @@ public class ChatClientHandler extends ChannelInboundHandlerAdapter {
 		} else if (fromServer instanceof String) {
 			chatWindow.chat.log(new MessagePacket((String) fromServer, MessageType.NORMAL));
 		}
-	    ctx.close();
 	}
 }
