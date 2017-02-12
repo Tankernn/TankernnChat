@@ -11,7 +11,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.awt.event.WindowStateListener;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -42,6 +41,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.timeout.IdleStateHandler;
 
 @SuppressWarnings("serial")
 public class ChatWindow extends JFrame implements ActionListener, KeyListener, WindowListener {
@@ -153,6 +153,7 @@ public class ChatWindow extends JFrame implements ActionListener, KeyListener, W
 						new ObjectDecoder(ClassResolvers.weakCachingResolver(
 								Packet.class.getClassLoader())));
 				ch.pipeline().addLast("encoder", new StringEncoder());
+				ch.pipeline().addLast(new IdleStateHandler(0, 4, 0));
 				ch.pipeline().addLast("handler",
 						new ChatClientHandler(ChatWindow.this));
 			}

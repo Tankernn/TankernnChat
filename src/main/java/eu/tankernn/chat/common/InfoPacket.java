@@ -6,10 +6,12 @@ import eu.tankernn.chat.server.Client;
 import eu.tankernn.chat.server.Server;
 
 public class InfoPacket implements Packet {
+	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -7295847853943808703L;
+	
 	public String[] usersOnline;
 	List<String> permissions;
 	public String username, channel;

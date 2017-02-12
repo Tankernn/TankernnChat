@@ -20,7 +20,7 @@ public class CommandRegistry  {
 	private static final Logger LOG = Logger.getLogger(CommandRegistry.class.getName());
 	private Map<String, Command> commands = new HashMap<>();
 	
-	private static final String COMMAND_PACKAGE = "server.command";
+	private static final String COMMAND_PACKAGE = "eu.tankernn.chat.server.command";
 	
 	public CommandRegistry() {
 		Reflections reflections = new Reflections(COMMAND_PACKAGE);

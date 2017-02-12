@@ -7,6 +7,7 @@ import eu.tankernn.chat.common.MessagePacket;
 import eu.tankernn.chat.common.MessagePacket.MessageType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleStateEvent;
 
 public class ChatClientHandler extends ChannelInboundHandlerAdapter {
 	private ChatWindow chatWindow;
@@ -33,6 +34,13 @@ public class ChatClientHandler extends ChannelInboundHandlerAdapter {
 			chatWindow.userList.setModel(chatWindow.model);
 		} else if (fromServer instanceof String) {
 			chatWindow.chat.log(new MessagePacket((String) fromServer, MessageType.NORMAL));
+		}
+	}
+	
+	@Override
+	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+		if (evt instanceof IdleStateEvent) {
+			ctx.writeAndFlush("/ping");
 		}
 	}
 }

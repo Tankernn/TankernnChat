@@ -13,20 +13,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import eu.tankernn.chat.common.MessagePacket;
-import eu.tankernn.chat.common.Packet;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.ServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 
 public class Server {
 	private static Thread clientListener;
@@ -107,6 +104,8 @@ public class Server {
 									new StringDecoder());
 							ch.pipeline().addLast("encoder",
 									new ObjectEncoder());
+							ch.pipeline().addLast("timeouthandler",
+									new ReadTimeoutHandler(5));
 							ch.pipeline().addLast("handler",
 									new ChatServerHandler());
 						}
@@ -122,7 +121,7 @@ public class Server {
 			// shut down your server.
 			f.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			// No need to handle, just shut down
 		} finally {
 			workerGroup.shutdownGracefully();
 			bossGroup.shutdownGracefully();

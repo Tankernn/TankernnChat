@@ -8,6 +8,8 @@ public class ChatServerHandler extends ChannelInboundHandlerAdapter {
 	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
+		if (((String) msg).equals("/ping"))
+			return;
 		if (c != null) {
 			// Existing client
 			c.handleMessage((String) msg);
@@ -24,7 +26,8 @@ public class ChatServerHandler extends ChannelInboundHandlerAdapter {
 	
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-		c.disconnect();
+		c.cleanUp();
+		Server.cleanUp();
 	}
 	
 	@Override

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
+import java.nio.channels.ClosedChannelException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,21 +88,23 @@ public class Client {
 		return true;
 	}
 	
-	public void disconnect(boolean output) {
+	public void disconnect() {
 		if (!isConnected()) // Already disconnected
 			return;
 		
-		timer.cancel();
 		c.close();
-		Server.cleanUp();
+	}
+	
+	public void cleanUp() {
+		cleanUp(true);
+	}
+	
+	public void cleanUp(boolean output) {
+		timer.cancel();
 		
 		if (output)
 			Server.wideBroadcast(
 					new MessagePacket(username + " has disconnected."));
-	}
-	
-	public void disconnect() {
-		disconnect(true);
 	}
 	
 	public boolean isConnected() {
@@ -119,14 +122,14 @@ public class Client {
 	}
 	
 	public void handleMessage(String message) {
-		if (message.startsWith("/")) // Command handling
+		if (message.startsWith("/")) { // Command handling
 			Server.getCommReg().executeCommand(message, this);
-		else // Normal message handling
+		} else // Normal message handling
 		{
 			messLastPeriod++;
 			if (messLastPeriod > 1 && !hasPermission("mod.spam")) {
 				send("No spamming!");
-				disconnect(false);
+				disconnect();
 			} else
 				getPrimaryChannel().broadcast(
 						new MessagePacket(Client.this.username, message));
@@ -140,10 +143,12 @@ public class Client {
 	 */
 	public void send(Packet pack) {
 		ChannelFuture cf = c.writeAndFlush(pack);
-		if (!cf.isSuccess())
+		if (cf.isSuccess())
+			c.writeAndFlush(InfoPacket.of(this));
+		else if (!(cf.cause() instanceof ClosedChannelException))
 			Server.getLogger().log(Level.SEVERE, "Error sending packet.",
 					cf.cause());
-		c.writeAndFlush(InfoPacket.of(this));
+		
 	}
 	
 	public void send(String message) {
