@@ -1,5 +1,6 @@
 package eu.tankernn.chat.server.command;
 
+import java.util.Deque;
 import java.util.Optional;
 
 import eu.tankernn.chat.common.MessagePacket;
@@ -12,11 +13,12 @@ import eu.tankernn.chat.server.Server;
 public class List implements Command {
 
 	@Override
-	public void execute(String[] args, Client caller) {
+	public void execute(Deque<String> args, Client caller) {
 		String arr, channelName = null;
 
-		if (args.length >= 1) {
-			Optional<Channel> maybeChannel = Server.getChannelByName(args[0]);
+		if (!args.isEmpty()) {
+			String name = args.pop();
+			Optional<Channel> maybeChannel = Server.getChannelByName(name);
 			Channel selectedChannel = maybeChannel.isPresent() ? maybeChannel.get() : null;
 			try {
 				arr = selectedChannel.listClients("\n");

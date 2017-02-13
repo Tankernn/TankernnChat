@@ -1,5 +1,7 @@
 package eu.tankernn.chat.server.command;
 
+import java.util.Deque;
+
 import eu.tankernn.chat.common.MessagePacket;
 import eu.tankernn.chat.server.Channel;
 import eu.tankernn.chat.server.Client;
@@ -9,10 +11,10 @@ import eu.tankernn.chat.server.Server;
 public class CreateChannel implements Command {
 	
 	@Override
-	public void execute(String[] args, Client caller) throws Exception {
-		Server.getChannels().add(new Channel(args[0]));
+	public void execute(Deque<String> args, Client caller) throws Exception {
+		Server.getChannels().add(new Channel(args.peek()));
 		
-		Server.wideBroadcast(new MessagePacket("Channel " + args[0] + " is now available. Use '/join " + args[0] + "' to join."));
+		Server.wideBroadcast(new MessagePacket("Channel " + args.peek() + " is now available. Use '/join " + args.peek() + "' to join."));
 	}
 	
 }

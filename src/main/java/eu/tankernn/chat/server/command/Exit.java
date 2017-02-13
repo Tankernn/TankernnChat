@@ -1,5 +1,7 @@
 package eu.tankernn.chat.server.command;
 
+import java.util.Deque;
+
 import eu.tankernn.chat.server.Client;
 import eu.tankernn.chat.server.Server;
 
@@ -7,7 +9,7 @@ import eu.tankernn.chat.server.Server;
 public class Exit implements Command {
 	
 	@Override
-	public void execute(String[] args, Client caller) {
+	public void execute(Deque<String> args, Client caller) {
 		Server.exit();
 	}
 	
