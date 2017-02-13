@@ -20,19 +20,19 @@ public class MessagePacket implements Packet {
 	}
 
 	public MessageType messType = MessageType.NORMAL;
-	public String content = "", channel = "", sender = "";
-	public SimpleAttributeSet style = new SimpleAttributeSet();
+	public final String content, sender;
+	private String channel;
+	public final SimpleAttributeSet style = new SimpleAttributeSet();
 
 	public MessagePacket(String channel, String send, String con, MessageType messType) {
 		this.sender = send;
-		this.channel = channel;
+		this.setChannel(channel);
 		this.content = con;
 		this.messType = messType;
 	}
 
 	public MessagePacket(String con, MessageType messType) {
-		this.content = con;
-		this.messType = messType;
+		this("", "", con, messType);
 	}
 
 	public MessagePacket(String sender, String con) {
@@ -44,7 +44,7 @@ public class MessagePacket implements Packet {
 	}
 
 	public boolean validate() {
-		return (!content.equals("")) && content != null;
+		return content != null && !content.isEmpty();
 	}
 
 	@Override
@@ -87,9 +87,17 @@ public class MessagePacket implements Packet {
 				Date time = new Date();
 				timestamp = dateFormat.format(time);
 			}
-			String preInfoStr = timestamp + "<" + channel + ">" + sender + ": ";
+			String preInfoStr = timestamp + "<" + getChannel() + ">" + sender + ": ";
 			return preInfoStr + content;
 		} else
 			return content;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
 	}
 }

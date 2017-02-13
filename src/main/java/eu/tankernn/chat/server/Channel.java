@@ -3,7 +3,7 @@ package eu.tankernn.chat.server;
 import eu.tankernn.chat.common.MessagePacket;
 
 public class Channel extends ClientCollection {
-	public String name;
+	public final String name;
 	
 	public Channel(String name) {
 		this.name = name;
@@ -11,7 +11,7 @@ public class Channel extends ClientCollection {
 	
 	@Override
 	public synchronized void broadcast(MessagePacket mess) {
-		mess.channel = name;
+		mess.setChannel(name);
 		super.broadcast(mess);
 	}
 }

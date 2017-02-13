@@ -30,7 +30,7 @@ public class ClientCollection {
 	 * @param mess
 	 *            The message object to send.
 	 */
-	public synchronized void broadcast(MessagePacket mess) {
+	public void broadcast(MessagePacket mess) {
 		if (mess.validate()) {
 			clients.forEach(c -> c.send(mess));
 			Server.getLocalClient().send(mess);
@@ -39,11 +39,10 @@ public class ClientCollection {
 
 	/**
 	 * Adds a user to the collection, checking that the user has not already
-	 * been added and that the the collection isn't "full".
+	 * been added.
 	 * 
 	 * @param user
 	 *            User to be added to collection.
-	 * @return
 	 */
 	public void add(Client user) {
 		if (clients.contains(user))
@@ -58,7 +57,7 @@ public class ClientCollection {
 	 * @param user
 	 *            User to remove.
 	 */
-	public synchronized void remove(Client user) {
+	public void remove(Client user) {
 		remove(user, false);
 	}
 
@@ -70,7 +69,7 @@ public class ClientCollection {
 	 * @param disconnect
 	 *            Should the user also be disconnected?
 	 */
-	public synchronized void remove(Client user, boolean disconnect) {
+	public void remove(Client user, boolean disconnect) {
 		if (disconnect)
 			user.disconnect();
 		clients.remove(user);

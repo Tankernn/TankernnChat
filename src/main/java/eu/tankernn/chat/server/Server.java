@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import eu.tankernn.chat.common.MessagePacket;
@@ -43,11 +44,11 @@ public class Server {
 	private static CommandRegistry commandRegistry;
 	
 	public static void main(String[] arg) {
-		//		try {
-		//			LogManager.getLogManager().readConfiguration(Server.class.getResourceAsStream("/logger.properties"));
-		//		} catch (SecurityException | IOException e2) {
-		//			log.log(Level.SEVERE, e2.getMessage(), e2);
-		//		}
+		try {
+			LogManager.getLogManager().readConfiguration(Server.class.getResourceAsStream("/logger.properties"));
+		} catch (SecurityException | IOException e2) {
+			log.log(Level.SEVERE, e2.getMessage(), e2);
+		}
 		log.info("Starting ChatServer version " + version + "...");
 		
 		log.fine("Loadning properties file...");

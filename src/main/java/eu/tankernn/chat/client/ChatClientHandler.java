@@ -1,10 +1,10 @@
 package eu.tankernn.chat.client;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JScrollBar;
 
 import eu.tankernn.chat.common.InfoPacket;
 import eu.tankernn.chat.common.MessagePacket;
-import eu.tankernn.chat.common.MessagePacket.MessageType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -22,6 +22,9 @@ public class ChatClientHandler extends ChannelInboundHandlerAdapter {
 	    if (fromServer instanceof MessagePacket) {
 			MessagePacket mess = ((MessagePacket) fromServer);
 			chatWindow.chat.log(mess);
+			// Scroll down
+			JScrollBar s = chatWindow.scroll.getVerticalScrollBar();
+			s.setValue(s.getMaximum());
 		} else if (fromServer instanceof InfoPacket) {
 			InfoPacket info = (InfoPacket) fromServer;
 
@@ -31,9 +34,7 @@ public class ChatClientHandler extends ChannelInboundHandlerAdapter {
 			for (String user : info.usersOnline)
 				model.addElement(user);
 
-			chatWindow.userList.setModel(chatWindow.model);
-		} else if (fromServer instanceof String) {
-			chatWindow.chat.log(new MessagePacket((String) fromServer, MessageType.NORMAL));
+			chatWindow.userList.setModel(model);
 		}
 	}
 	

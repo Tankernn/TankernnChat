@@ -1,0 +1,5 @@
+1. HTML
+2. File transfer
+3. Better protocol (non-POJO-based)
+4. Channel permissions
+5. Proper accounts, using a MySQL-database (optional)
