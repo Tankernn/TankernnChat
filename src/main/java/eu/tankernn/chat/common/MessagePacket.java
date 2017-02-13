@@ -13,7 +13,7 @@ public class MessagePacket implements Packet {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 91062579797334511L;
 
 	public enum MessageType {
 		PM, NORMAL, WARNING, ERROR, COMMAND, INFO

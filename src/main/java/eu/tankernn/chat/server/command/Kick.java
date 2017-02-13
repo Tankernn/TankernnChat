@@ -15,7 +15,7 @@ public class Kick implements Command {
 		Optional<Client> maybeVictim = Server.getUserByName(args[0]);
 
 		try {
-			maybeVictim.orElseThrow(NullPointerException::new).disconnect(false);
+			maybeVictim.orElseThrow(NullPointerException::new).disconnect();
 		} catch (NullPointerException ex) {
 			caller.send(new MessagePacket("No user called " + args[0] + "!", MessageType.ERROR));
 		}

@@ -18,6 +18,7 @@ public class ChatClient {
 	static File confFile = new File("client.properties");
 	
 	public static void main(String[] arg) {
+		
 		try {
 			prop.load(new FileInputStream(confFile));
 		} catch (FileNotFoundException e) {
@@ -38,7 +39,6 @@ public class ChatClient {
 		};
 		
 		String host, username, portString;
-		
 		JOptionPane.showMessageDialog(null, inputs, "Chat settings", JOptionPane.PLAIN_MESSAGE);
 		
 		host = hostBox.getText();
