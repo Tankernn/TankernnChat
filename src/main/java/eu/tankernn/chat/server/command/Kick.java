@@ -3,8 +3,8 @@ package eu.tankernn.chat.server.command;
 import java.util.Deque;
 import java.util.Optional;
 
-import eu.tankernn.chat.common.MessagePacket;
-import eu.tankernn.chat.common.MessagePacket.MessageType;
+import eu.tankernn.chat.packets.MessagePacket;
+import eu.tankernn.chat.packets.MessagePacket.MessageType;
 import eu.tankernn.chat.server.Client;
 import eu.tankernn.chat.server.Server;
 

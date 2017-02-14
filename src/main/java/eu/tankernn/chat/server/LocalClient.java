@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
-import eu.tankernn.chat.common.MessagePacket;
-import eu.tankernn.chat.common.Packet;
+import eu.tankernn.chat.packets.MessagePacket;
+import eu.tankernn.chat.packets.Packet;
 
 public class LocalClient extends Client implements Runnable {
 	

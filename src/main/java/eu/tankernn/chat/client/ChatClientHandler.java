@@ -3,8 +3,8 @@ package eu.tankernn.chat.client;
 import javax.swing.DefaultListModel;
 import javax.swing.JScrollBar;
 
-import eu.tankernn.chat.common.InfoPacket;
-import eu.tankernn.chat.common.MessagePacket;
+import eu.tankernn.chat.packets.InfoPacket;
+import eu.tankernn.chat.packets.MessagePacket;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;

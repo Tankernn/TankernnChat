@@ -5,7 +5,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-import eu.tankernn.chat.common.MessagePacket;
+import eu.tankernn.chat.packets.MessagePacket;
 
 @SuppressWarnings("serial")
 public class Console extends JTextPane {

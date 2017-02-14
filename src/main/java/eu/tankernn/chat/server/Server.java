@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import eu.tankernn.chat.common.MessagePacket;
+import eu.tankernn.chat.packets.MessagePacket;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -42,6 +44,7 @@ public class Server {
 	private static LocalClient OPClient;
 	private static final Logger log = Logger.getGlobal();
 	private static CommandRegistry commandRegistry;
+	private static Timer timer = new Timer();
 	
 	public static void main(String[] arg) {
 		try {
@@ -81,6 +84,14 @@ public class Server {
 		log.fine("Starting client listener thread...");
 		clientListener = new Thread(Server::run);
 		clientListener.start();
+		
+		timer.schedule(new TimerTask() {
+			
+			@Override
+			public void run() {
+				clients.stream().forEach(Client::spamReset);
+			}
+		}, 1000, 1000);
 		
 		log.info("Server started successfully!");
 	}

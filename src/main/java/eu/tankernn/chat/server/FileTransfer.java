@@ -1,7 +1,5 @@
 package eu.tankernn.chat.server;
 
-import server.Client;
-
 public class FileTransfer {
 	Client sender, reciever;
 

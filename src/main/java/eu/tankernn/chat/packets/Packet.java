@@ -1,4 +1,4 @@
-package eu.tankernn.chat.common;
+package eu.tankernn.chat.packets;
 
 public interface Packet extends java.io.Serializable {
 	

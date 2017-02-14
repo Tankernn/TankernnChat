@@ -1,9 +1,8 @@
-package eu.tankernn.chat.common;
+package eu.tankernn.chat.packets.filesend;
 
-import common.Packet;
+import eu.tankernn.chat.packets.Packet;
 
-public class FileSendPacket implements Packet {
-	public static final int BUFFER_SIZE = 1024;
+public class FileSendInfoPacket implements Packet {
 	
 	/**
 	 * 
@@ -18,17 +17,12 @@ public class FileSendPacket implements Packet {
 	public int fileSize;
 	public String destinationUser;
 	public TransferAction action;
-	public byte[] data;
 	
-	public FileSendPacket(String filename, int fileSize, String destUser, TransferAction action) {
+	public FileSendInfoPacket(String filename, int fileSize, String destUser, TransferAction action) {
 		this.filename = filename;
 		this.fileSize = fileSize;
 		this.destinationUser = destUser;
 		this.action = action;
-	}
-	
-	public FileSendPacket(byte[] data) {
-		this.data = data;
 	}
 
 }

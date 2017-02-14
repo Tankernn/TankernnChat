@@ -8,13 +8,11 @@ import java.nio.channels.ClosedChannelException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 
-import eu.tankernn.chat.common.InfoPacket;
-import eu.tankernn.chat.common.MessagePacket;
-import eu.tankernn.chat.common.Packet;
+import eu.tankernn.chat.packets.InfoPacket;
+import eu.tankernn.chat.packets.MessagePacket;
+import eu.tankernn.chat.packets.Packet;
 import io.netty.channel.ChannelFuture;
 
 public class Client {
@@ -24,7 +22,6 @@ public class Client {
 	protected List<String> permissions = new ArrayList<>();
 	
 	private int messLastPeriod = 0;
-	private Timer timer = new Timer();
 	
 	private Channel primaryChannel = Server.getChannels().get(0);
 	
@@ -40,13 +37,6 @@ public class Client {
 		
 		send(new MessagePacket(
 				"Welcome to the server, " + username + "! Enjoy your stay!"));
-		
-		timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				messLastPeriod = 0;
-			}
-		}, 800, 800);
 	}
 	
 	public Client(String username, List<String> permissions, BufferedReader in, ObjectOutputStream out) {
@@ -93,18 +83,6 @@ public class Client {
 			return;
 		
 		c.close();
-	}
-	
-	public void cleanUp() {
-		cleanUp(true);
-	}
-	
-	public void cleanUp(boolean output) {
-		timer.cancel();
-		
-		if (output)
-			Server.wideBroadcast(
-					new MessagePacket(username + " has disconnected."));
 	}
 	
 	public boolean isConnected() {
@@ -157,6 +135,10 @@ public class Client {
 	
 	public String getIP() throws IOException {
 		return ((InetSocketAddress) c.remoteAddress()).getHostString();
+	}
+	
+	public void spamReset() {
+		messLastPeriod = 0;
 	}
 	
 	@Override

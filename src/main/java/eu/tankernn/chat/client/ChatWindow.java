@@ -26,9 +26,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
-import eu.tankernn.chat.common.MessagePacket;
-import eu.tankernn.chat.common.MessagePacket.MessageType;
-import eu.tankernn.chat.common.Packet;
+import eu.tankernn.chat.packets.MessagePacket;
+import eu.tankernn.chat.packets.Packet;
+import eu.tankernn.chat.packets.MessagePacket.MessageType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

@@ -7,8 +7,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -20,8 +18,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
-
-import eu.tankernn.chat.client.ChatClient;
 
 public class FileSendWindow extends JFrame implements ActionListener {
 	/**
@@ -108,7 +104,7 @@ public class FileSendWindow extends JFrame implements ActionListener {
 		if (e.getSource().equals(buttonSend)) {
 			int returnVal = fc.showOpenDialog(this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File file = fc.getSelectedFile();
+				//File file = fc.getSelectedFile();
 				
 //				try {
 //					// FIXME Move stuff from ChatWindow to ChatClient

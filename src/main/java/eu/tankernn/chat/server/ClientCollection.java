@@ -3,8 +3,9 @@ package eu.tankernn.chat.server;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
 
-import eu.tankernn.chat.common.MessagePacket;
+import eu.tankernn.chat.packets.MessagePacket;
 
 /**
  * A collection of clients.
@@ -107,5 +108,9 @@ public class ClientCollection {
 	 */
 	public void cleanUp() {
 		clients.removeIf(c -> !c.isConnected());
+	}
+
+	public Stream<Client> stream() {
+		return clients.stream();
 	}
 }

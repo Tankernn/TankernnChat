@@ -8,7 +8,8 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 
 import eu.tankernn.chat.client.ChatClient;
-import eu.tankernn.chat.common.FileSendPacket;
+import eu.tankernn.chat.packets.filesend.FileSendDataPacket;
+import eu.tankernn.chat.packets.filesend.FileSendInfoPacket;
 import io.netty.channel.Channel;
 
 public class Download extends SwingWorker<Boolean, Void> {
@@ -36,7 +37,7 @@ public class Download extends SwingWorker<Boolean, Void> {
 		monitor.setNote(status);
 	}
 	
-	public Download(Channel c, String destinationPath, FileSendPacket pack) throws IOException {
+	public Download(Channel c, String destinationPath, FileSendInfoPacket pack) throws IOException {
 		this.dest = destinationPath + pack.filename;
 		this.c = c;
 		
@@ -73,7 +74,7 @@ public class Download extends SwingWorker<Boolean, Void> {
 		return true;
 	}
 	
-	public void handlePacket(FileSendPacket pack) {
+	public void handlePacket(FileSendDataPacket pack) {
 		byte[] bytes = pack.data;
 		try {
 			fOut.write(bytes);

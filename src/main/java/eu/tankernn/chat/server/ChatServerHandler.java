@@ -1,5 +1,6 @@
 package eu.tankernn.chat.server;
 
+import eu.tankernn.chat.packets.MessagePacket;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -26,7 +27,8 @@ public class ChatServerHandler extends ChannelInboundHandlerAdapter {
 	
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-		c.cleanUp();
+		Server.wideBroadcast(
+				new MessagePacket(c.username + " has disconnected."));
 		Server.cleanUp();
 	}
 	

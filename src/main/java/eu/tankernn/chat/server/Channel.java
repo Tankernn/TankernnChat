@@ -1,6 +1,6 @@
 package eu.tankernn.chat.server;
 
-import eu.tankernn.chat.common.MessagePacket;
+import eu.tankernn.chat.packets.MessagePacket;
 
 public class Channel extends ClientCollection {
 	public final String name;

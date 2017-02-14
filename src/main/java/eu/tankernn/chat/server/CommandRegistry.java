@@ -12,8 +12,8 @@ import java.util.stream.Stream;
 
 import org.reflections.Reflections;
 
-import eu.tankernn.chat.common.MessagePacket;
-import eu.tankernn.chat.common.MessagePacket.MessageType;
+import eu.tankernn.chat.packets.MessagePacket;
+import eu.tankernn.chat.packets.MessagePacket.MessageType;
 import eu.tankernn.chat.server.command.Command;
 import eu.tankernn.chat.server.command.CommandInfo;
 
