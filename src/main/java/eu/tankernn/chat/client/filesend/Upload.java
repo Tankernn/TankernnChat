@@ -10,7 +10,6 @@ import javax.swing.JOptionPane;
 import eu.tankernn.chat.packets.Packet;
 import eu.tankernn.chat.packets.filesend.FileSendDataPacket;
 import eu.tankernn.chat.packets.filesend.FileSendInfoPacket;
-import eu.tankernn.chat.packets.filesend.FileSendInfoPacket.TransferAction;
 import io.netty.channel.Channel;
 
 public class Upload implements Runnable {
@@ -22,7 +21,8 @@ public class Upload implements Runnable {
 		this.c = c;
 		this.file = file;
 		
-		send(new FileSendInfoPacket(file.getName(), (int)file.length(), destUsername, TransferAction.INIT));
+		send(new FileSendInfoPacket(file.getName(), (int) file.length(),
+				destUsername));
 	}
 	
 	public void send(Packet pack) throws IOException {
@@ -35,12 +35,14 @@ public class Upload implements Runnable {
 		byte[] bytes = new byte[FileSendDataPacket.BUFFER_SIZE];
 		try {
 			FileInputStream fileIn = new FileInputStream(file);
-			while(fileIn.available() > 0) {
-				bytesLeft -= fileIn.read(bytes, 0, (int) Math.min(bytes.length, bytesLeft));
+			while (fileIn.available() > 0) {
+				bytesLeft -= fileIn.read(bytes, 0,
+						(int) Math.min(bytes.length, bytesLeft));
 				send(new FileSendDataPacket(bytes));
 			}
 			fileIn.close();
-			JOptionPane.showMessageDialog(null, "Transferred file " + file.getName());
+			JOptionPane.showMessageDialog(null,
+					"Transferred file " + file.getName());
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}

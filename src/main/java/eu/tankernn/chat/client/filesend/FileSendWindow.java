@@ -115,7 +115,7 @@ public class FileSendWindow extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource().equals(downloadFile)) {
 			if (!dlList.isSelectionEmpty()) {
-				dlList.getSelectedValue().execute();
+				dlList.getSelectedValue().startDownload();
 			}
 		}
 	}

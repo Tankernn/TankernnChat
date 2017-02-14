@@ -5,37 +5,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.swing.ProgressMonitor;
-import javax.swing.SwingWorker;
 
 import eu.tankernn.chat.client.ChatClient;
 import eu.tankernn.chat.packets.filesend.FileSendDataPacket;
 import eu.tankernn.chat.packets.filesend.FileSendInfoPacket;
+import eu.tankernn.chat.packets.filesend.FileSendStatusPacket;
+import eu.tankernn.chat.packets.filesend.FileSendStatusPacket.TransferAction;
 import io.netty.channel.Channel;
 
-public class Download extends SwingWorker<Boolean, Void> {
-	Channel c;
-	String fileName;
-	String dest;
-	int remoteSize, offset;
-	FileOutputStream fOut;
+public class Download {
+	private Channel c;
+	private String fileName;
+	private String dest;
+	private int remoteSize, offset;
+	private FileOutputStream fOut;
 	
 	private ProgressMonitor monitor;
-	int ready;
-	String status;
-	private int progressIndex;
-	
-	public synchronized void setReady(int newReady) {
-		int oldReady = ready;
-		ready = newReady;
-		firePropertyChange("ready", oldReady, ready);
-	}
-	
-	public synchronized void setStatus(String newStatus) {
-		String oldStatus = status;
-		status = newStatus;
-		firePropertyChange("note", oldStatus, status);
-		monitor.setNote(status);
-	}
 	
 	public Download(Channel c, String destinationPath, FileSendInfoPacket pack) throws IOException {
 		this.dest = destinationPath + pack.filename;
@@ -45,33 +30,33 @@ public class Download extends SwingWorker<Boolean, Void> {
 		remoteSize = pack.fileSize;
 	}
 	
-	public boolean doDownload() throws IOException {
-		c.writeAndFlush("/start");
+	public void startDownload() {
+		c.writeAndFlush(new FileSendStatusPacket(TransferAction.ACCEPT));
 		
 		File file = new File(dest);
-		file.createNewFile();
-		fOut = new FileOutputStream(file);
 		
-		monitor = new ProgressMonitor(null, null, dest, 0, 100);
-		setProgress(0);
-		setStatus("Downloading " + fileName + "...");
-		
-		int prog = (int) ((offset / remoteSize) * 100);
-		if (prog > 100) {
-			prog = 100;
-		} else if (prog < 0) {
-			prog = 0;
+		try {
+			file.createNewFile();
+			fOut = new FileOutputStream(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
 		}
 		
-		setProgress(prog);
+		monitor = new ProgressMonitor(null, "Downloading " + fileName + "...", "0%", 0, 100);
+		monitor.setProgress(0);
 		
-		prog = (progressIndex * 100) + prog;
-		
-		setReady(prog);
-		
-		monitor.setNote(status);
-		
-		return true;
+		while (offset < remoteSize) {
+			int prog = (int) ((offset / remoteSize) * 100);
+			if (prog > 100) {
+				prog = 100;
+			} else if (prog < 0) {
+				prog = 0;
+			}
+			
+			monitor.setProgress(prog);
+			monitor.setNote(prog + "%");
+		}
 	}
 	
 	public void handlePacket(FileSendDataPacket pack) {
@@ -80,35 +65,24 @@ public class Download extends SwingWorker<Boolean, Void> {
 			fOut.write(bytes);
 			offset += bytes.length;
 			if (offset >= remoteSize) {
-				fOut.flush();
-				fOut.close();
-				monitor.setNote("File transfer complete. File resides in " + dest);
-				ChatClient.getFileWindow().downloads.remove(this);
-				ChatClient.getFileWindow().updateList();
+				finish();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+	}
+	
+	private void finish() throws IOException {
+		fOut.flush();
+		fOut.close();
+		monitor.setNote(
+				"File transfer complete. File resides in " + dest);
+		ChatClient.getFileWindow().downloads.remove(this);
+		ChatClient.getFileWindow().updateList();
 	}
 	
 	@Override
 	public String toString() {
 		return fileName;
-	}
-	
-	@Override
-	protected Boolean doInBackground() {
-		boolean success = false;
-		
-		try {
-			success = doDownload();
-		} catch (IOException ex) {
-			ex.printStackTrace();
-			ChatClient.getFileWindow().downloads.remove(this);
-			ChatClient.getFileWindow().updateList();
-		}
-		setStatus(success ? "Success" : "Downloads failed");
-		return success;
 	}
 }
