@@ -1,21 +1,21 @@
 package eu.tankernn.chat.client.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import eu.tankernn.chat.client.ChatWindow;
+import eu.tankernn.chat.client.ChatClient;
 
 public class ClientTestCase {
-	private ChatWindow user1;
-	private ChatWindow user2;
+	private ChatClient user1;
+	private ChatClient user2;
 
 	@Before
 	public void setUp() {
-		user1 = new ChatWindow("localhost", 25566, "user1");
-		user2 = new ChatWindow("localhost", 25566, "user2");
+		user1 = new ChatClient("localhost", 25566, "user1");
+		user2 = new ChatClient("localhost", 25566, "user2");
 	}
 
 	@Test
@@ -31,8 +31,8 @@ public class ClientTestCase {
 
 	@After
 	public void cleanUp() {
-		user1.dispose();
-		user2.dispose();
+		user1.exit();
+		user2.exit();
 	}
 
 }

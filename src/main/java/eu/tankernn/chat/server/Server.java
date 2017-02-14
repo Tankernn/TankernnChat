@@ -16,6 +16,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import eu.tankernn.chat.packets.MessagePacket;
+import eu.tankernn.chat.packets.Packet;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -24,8 +25,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 public class Server {
@@ -48,7 +50,8 @@ public class Server {
 	
 	public static void main(String[] arg) {
 		try {
-			LogManager.getLogManager().readConfiguration(Server.class.getResourceAsStream("/logger.properties"));
+			LogManager.getLogManager().readConfiguration(
+					Server.class.getResourceAsStream("/logger.properties"));
 		} catch (SecurityException | IOException e2) {
 			log.log(Level.SEVERE, e2.getMessage(), e2);
 		}
@@ -99,6 +102,8 @@ public class Server {
 	public static void addClient(Client c) {
 		clients.add(c);
 		getChannels().get(0).add(c);
+		c.send(new MessagePacket(
+				"Welcome to the server, " + c.username + "! Enjoy your stay!"));
 		wideBroadcast(new MessagePacket(c.username + " has connected."));
 	}
 	
@@ -112,8 +117,9 @@ public class Server {
 					.childHandler(new ChannelInitializer<SocketChannel>() {
 						@Override
 						public void initChannel(SocketChannel ch) throws Exception {
-							ch.pipeline().addLast("decoder",
-									new StringDecoder());
+							ch.pipeline().addLast("decoder", new ObjectDecoder(
+									ClassResolvers.weakCachingResolver(
+											Packet.class.getClassLoader())));
 							ch.pipeline().addLast("encoder",
 									new ObjectEncoder());
 							ch.pipeline().addLast("timeouthandler",

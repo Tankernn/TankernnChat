@@ -8,6 +8,7 @@ import java.nio.channels.ClosedChannelException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 
 import eu.tankernn.chat.packets.InfoPacket;
@@ -17,6 +18,7 @@ import io.netty.channel.ChannelFuture;
 
 public class Client {
 	io.netty.channel.Channel c;
+	private Optional<Client> filePartner = Optional.empty();
 	
 	public final String username;
 	protected List<String> permissions = new ArrayList<>();
@@ -29,14 +31,7 @@ public class Client {
 		this.c = c;
 		this.username = username;
 		
-		if (!validateUser()) {
-			return;
-		}
-		
 		permissions.add("user.*");
-		
-		send(new MessagePacket(
-				"Welcome to the server, " + username + "! Enjoy your stay!"));
 	}
 	
 	public Client(String username, List<String> permissions, BufferedReader in, ObjectOutputStream out) {
@@ -79,9 +74,6 @@ public class Client {
 	}
 	
 	public void disconnect() {
-		if (!isConnected()) // Already disconnected
-			return;
-		
 		c.close();
 	}
 	
@@ -120,10 +112,10 @@ public class Client {
 	 * @param pack Packet to send to the user
 	 */
 	public void send(Packet pack) {
-		ChannelFuture cf = c.writeAndFlush(pack);
-		if (cf.isSuccess())
-			c.writeAndFlush(InfoPacket.of(this));
-		else if (!(cf.cause() instanceof ClosedChannelException))
+		ChannelFuture cf;
+		cf = c.writeAndFlush(pack);
+		if (!cf.isSuccess())
+			if (!(cf.cause() instanceof ClosedChannelException))
 			Server.getLogger().log(Level.SEVERE, "Error sending packet.",
 					cf.cause());
 		
@@ -160,5 +152,13 @@ public class Client {
 	
 	public void setPrimaryChannel(Channel primaryChannel) {
 		this.primaryChannel = primaryChannel;
+	}
+	
+	public void setFilePartner(Client c) {
+		filePartner = c == null ? Optional.empty() : Optional.of(c);
+	}
+	
+	public Optional<Client> getFilePartner() {
+		return filePartner;
 	}
 }

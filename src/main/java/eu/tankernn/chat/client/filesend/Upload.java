@@ -3,13 +3,13 @@ package eu.tankernn.chat.client.filesend;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.UnknownHostException;
 
 import javax.swing.JOptionPane;
 
 import eu.tankernn.chat.packets.Packet;
 import eu.tankernn.chat.packets.filesend.FileSendDataPacket;
 import eu.tankernn.chat.packets.filesend.FileSendInfoPacket;
+import eu.tankernn.chat.packets.filesend.FileSendStatusPacket;
 import io.netty.channel.Channel;
 
 public class Upload implements Runnable {
@@ -17,7 +17,7 @@ public class Upload implements Runnable {
 	private Channel c;
 	private File file;
 	
-	public Upload(Channel c, File file, String destUsername) throws UnknownHostException, IOException {
+	public Upload(Channel c, File file, String destUsername) throws IOException {
 		this.c = c;
 		this.file = file;
 		
@@ -26,21 +26,25 @@ public class Upload implements Runnable {
 	}
 	
 	public void send(Packet pack) throws IOException {
-		c.writeAndFlush(pack);
+		try {
+			c.writeAndFlush(pack).sync();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
 	public void run() {
-		long bytesLeft = file.length();
-		byte[] bytes = new byte[FileSendDataPacket.BUFFER_SIZE];
 		try {
 			FileInputStream fileIn = new FileInputStream(file);
-			while (fileIn.available() > 0) {
-				bytesLeft -= fileIn.read(bytes, 0,
-						(int) Math.min(bytes.length, bytesLeft));
+			while (fileIn.available() > 0 && !Thread.interrupted()) {
+				byte[] bytes = new byte[(int) Math
+						.min(FileSendDataPacket.BUFFER_SIZE, fileIn.available())];
+				fileIn.read(bytes);
 				send(new FileSendDataPacket(bytes));
 			}
 			fileIn.close();
+			send(FileSendStatusPacket.FINISHED);
 			JOptionPane.showMessageDialog(null,
 					"Transferred file " + file.getName());
 		} catch (IOException ex) {

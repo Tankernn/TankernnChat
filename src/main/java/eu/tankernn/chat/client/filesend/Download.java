@@ -10,19 +10,17 @@ import eu.tankernn.chat.client.ChatClient;
 import eu.tankernn.chat.packets.filesend.FileSendDataPacket;
 import eu.tankernn.chat.packets.filesend.FileSendInfoPacket;
 import eu.tankernn.chat.packets.filesend.FileSendStatusPacket;
-import eu.tankernn.chat.packets.filesend.FileSendStatusPacket.TransferAction;
-import io.netty.channel.Channel;
 
-public class Download {
-	private Channel c;
+public class Download implements Runnable {
+	private ChatClient c;
 	private String fileName;
 	private String dest;
-	private int remoteSize, offset;
+	private int remoteSize, received;
 	private FileOutputStream fOut;
 	
 	private ProgressMonitor monitor;
 	
-	public Download(Channel c, String destinationPath, FileSendInfoPacket pack) throws IOException {
+	public Download(ChatClient c, String destinationPath, FileSendInfoPacket pack) {
 		this.dest = destinationPath + pack.filename;
 		this.c = c;
 		
@@ -30,8 +28,8 @@ public class Download {
 		remoteSize = pack.fileSize;
 	}
 	
-	public void startDownload() {
-		c.writeAndFlush(new FileSendStatusPacket(TransferAction.ACCEPT));
+	public void run() {
+		c.send(FileSendStatusPacket.ACCEPT);
 		
 		File file = new File(dest);
 		
@@ -43,28 +41,32 @@ public class Download {
 			return;
 		}
 		
-		monitor = new ProgressMonitor(null, "Downloading " + fileName + "...", "0%", 0, 100);
+		monitor = new ProgressMonitor(null, "Downloading " + fileName + "...",
+				"0%", 0, 100);
 		monitor.setProgress(0);
-		
-		while (offset < remoteSize) {
-			int prog = (int) ((offset / remoteSize) * 100);
-			if (prog > 100) {
-				prog = 100;
-			} else if (prog < 0) {
-				prog = 0;
-			}
-			
-			monitor.setProgress(prog);
-			monitor.setNote(prog + "%");
+	}
+	
+	private void updateProgress() {
+		int prog = (int) ((received / remoteSize) * 100);
+		if (prog > 100) {
+			prog = 100;
+		} else if (prog < 0) {
+			prog = 0;
 		}
+		
+		monitor.setProgress(prog);
+		monitor.setNote(prog + "%");
 	}
 	
 	public void handlePacket(FileSendDataPacket pack) {
 		byte[] bytes = pack.data;
 		try {
 			fOut.write(bytes);
-			offset += bytes.length;
-			if (offset >= remoteSize) {
+			received += bytes.length;
+			updateProgress();
+			if (received >= remoteSize) {
+				if (received > remoteSize)
+					System.err.println("Recieved more bytes than advertised.");
 				finish();
 			}
 		} catch (IOException e) {
@@ -72,13 +74,16 @@ public class Download {
 		}
 	}
 	
-	private void finish() throws IOException {
-		fOut.flush();
-		fOut.close();
-		monitor.setNote(
-				"File transfer complete. File resides in " + dest);
-		ChatClient.getFileWindow().downloads.remove(this);
-		ChatClient.getFileWindow().updateList();
+	public void finish() {
+		try {
+			fOut.flush();
+			fOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		monitor.setNote("File transfer complete. File resides in " + dest);
+		c.getFileWindow().removeDownload(this);
+		c.getFileWindow().updateList();
 	}
 	
 	@Override

@@ -11,7 +11,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -20,58 +19,38 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
+import eu.tankernn.chat.packets.InfoPacket;
 import eu.tankernn.chat.packets.MessagePacket;
-import eu.tankernn.chat.packets.Packet;
-import eu.tankernn.chat.packets.MessagePacket.MessageType;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.string.StringEncoder;
-import io.netty.handler.timeout.IdleStateHandler;
 
 @SuppressWarnings("serial")
 public class ChatWindow extends JFrame implements ActionListener, KeyListener, WindowListener {
-	Thread getMessages;
-	static File confFile = new File("client.properties");
+	private ChatClient client;
 	
-	EventLoopGroup workerGroup = new NioEventLoopGroup();
-	Channel c;
+	private ArrayList<String> lastMess = new ArrayList<String>();
+	private int messIndex = 0;
 	
-	String adress, username;
-	ArrayList<String> lastMess = new ArrayList<String>();
-	int port, messIndex = 0;
+	private GridBagLayout g = new GridBagLayout();
+	private GridBagConstraints con = new GridBagConstraints();
 	
-	GridBagLayout g = new GridBagLayout();
-	GridBagConstraints con = new GridBagConstraints();
+	private JPanel right = new JPanel();
+	private JLabel infoLabel = new JLabel("Users online:");
+	private DefaultListModel<String> model = new DefaultListModel<String>();
+	private JList<String> userList = new JList<String>(model);
+	private JButton reconnect = new JButton("Reconnect");
 	
-	JPanel right = new JPanel();
-	JLabel infoLabel = new JLabel("Users online:");
-	DefaultListModel<String> model = new DefaultListModel<String>();
-	JList<String> userList = new JList<String>(model);
-	JButton reconnect = new JButton("Reconnect");
+	private Console chat = new Console();
+	private JScrollPane scroll = new JScrollPane(chat);
+	private JTextField write = new JTextField();
 	
-	Console chat = new Console();
-	JScrollPane scroll = new JScrollPane(chat);
-	JTextField write = new JTextField();
-	
-	public ChatWindow(String adress, int port, String username) {
-		this.adress = adress;
-		this.port = port;
-		this.username = username;
+	public ChatWindow(ChatClient client) {
+		this.client = client;
 		
 		// List config
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -113,66 +92,17 @@ public class ChatWindow extends JFrame implements ActionListener, KeyListener, W
 		// Window config
 		this.setLocation(new Point(100, 100));
 		setSize(600, 600);
-		setVisible(true);
-		setTitle("Chat on " + adress + " | Username: " + username);
+		setTitle(
+				"Chat on " + client.address + " | Username: " + client.username);
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		addWindowListener(this);
-		
-		connect(adress, port, username);
-	}
-	
-	public void send(String text) {
-		ChannelFuture cf = null;
-		try {
-			cf = c.writeAndFlush(text).sync();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		if (!cf.isSuccess()) {
-			chat.log(new MessagePacket(
-					"Error sending message.",
-					MessageType.WARNING));
-			cf.cause().printStackTrace();
-			write.setEnabled(false);
-		}
-	}
-	
-	protected void connect(String address, int port, String username) {
-		if (!workerGroup.isShutdown())
-			workerGroup.shutdownGracefully();
-		workerGroup = new NioEventLoopGroup();
-		
-		Bootstrap b = new Bootstrap();
-		b.group(workerGroup);
-		b.channel(NioSocketChannel.class);
-		b.option(ChannelOption.SO_KEEPALIVE, true);
-		b.handler(new ChannelInitializer<SocketChannel>() {
-			@Override
-			public void initChannel(SocketChannel ch) throws Exception {
-				ch.pipeline().addLast("decoder",
-						new ObjectDecoder(ClassResolvers.weakCachingResolver(
-								Packet.class.getClassLoader())));
-				ch.pipeline().addLast("encoder", new StringEncoder());
-				ch.pipeline().addLast(new IdleStateHandler(0, 4, 0));
-				ch.pipeline().addLast("handler",
-						new ChatClientHandler(ChatWindow.this));
-			}
-		});
-		
-		// Start the client.
-		try {
-			c = b.connect(address, port).sync().channel();
-			// Set username
-			send(username);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		setVisible(true);
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(reconnect))
-			connect(adress, port, username);
+			client.connect();
 	}
 	
 	@Override
@@ -197,7 +127,7 @@ public class ChatWindow extends JFrame implements ActionListener, KeyListener, W
 		case KeyEvent.VK_ENTER:
 			String text = write.getText().trim();
 			if (!text.equals("")) {
-				send(text);
+				client.send(text);
 				lastMess.add(text);
 				messIndex = lastMess.size();
 				write.setText("");
@@ -212,49 +142,46 @@ public class ChatWindow extends JFrame implements ActionListener, KeyListener, W
 	@Override
 	public void keyTyped(KeyEvent arg0) {}
 	
-	public boolean isConnected() {
-		return c.isActive();
-	}
-
 	@Override
-	public void windowOpened(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	public void windowOpened(WindowEvent e) {}
+	
 	@Override
 	public void windowClosing(WindowEvent e) {
-		workerGroup.shutdownGracefully();
-		System.exit(0);
+		client.exit();
 	}
-
+	
 	@Override
-	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+	public void windowClosed(WindowEvent e) {}
+	
+	@Override
+	public void windowIconified(WindowEvent e) {}
+	
+	@Override
+	public void windowDeiconified(WindowEvent e) {}
+	
+	@Override
+	public void windowActivated(WindowEvent e) {}
+	
+	@Override
+	public void windowDeactivated(WindowEvent e) {}
+	
+	public Console getChat() {
+		return chat;
 	}
-
-	@Override
-	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+	
+	public void log(MessagePacket messagePacket) {
+		chat.log(messagePacket);
+		JScrollBar s = scroll.getVerticalScrollBar();
+		s.setValue(s.getMaximum());
 	}
-
-	@Override
-	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
+	
+	public void setInfo(InfoPacket info) {
+		infoLabel.setText("<html>" + info.toString().replace("\n", "<br>"));
 		
-	}
-
-	@Override
-	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
+		DefaultListModel<String> model = new DefaultListModel<String>();
+		for (String user: info.usersOnline)
+			model.addElement(user);
 		
-	}
-
-	@Override
-	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+		userList.setModel(model);
 	}
 }
