@@ -1,7 +1,0 @@
-client\ClientTestCase$1.class
-client\ClientTestSuite.class
-server\ServerTestCase.class
-server\ServerTestSuite.class
-client\ClientTestCase.class
-common\CompleteTestSuite.class
-server\ServerTestSuite$1.class
