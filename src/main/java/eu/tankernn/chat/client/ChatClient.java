@@ -81,6 +81,8 @@ public class ChatClient {
 			workerGroup.shutdownGracefully();
 		workerGroup = new NioEventLoopGroup();
 		
+		chatWindow.log(new MessagePacket("Connecting to " + address + " on port " + port + "."));
+		
 		Bootstrap b = new Bootstrap();
 		b.group(workerGroup);
 		b.channel(NioSocketChannel.class);

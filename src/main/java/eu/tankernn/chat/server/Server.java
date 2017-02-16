@@ -32,7 +32,7 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 public class Server {
 	private static Properties prop = new Properties();
 	private static File propFile = new File("server.properties");
-	private static int port, maxUsers;
+	private static int port;
 	private static final String VERSION = "4.0";
 
 	private static final Logger LOG = Logger.getGlobal();
@@ -72,7 +72,6 @@ public class Server {
 
 		LOG.fine("Reading numbers from properties object...");
 		port = Integer.parseInt(prop.getProperty("port"));
-		maxUsers = Integer.parseInt(prop.getProperty("maxUsers"));
 
 		clients = new ClientCollection();
 		getChannels().add(new Channel("Main"));
@@ -121,10 +120,7 @@ public class Server {
 			// Bind and start to accept incoming connections.
 			bootstrap.bind(port).sync();
 		} catch (InterruptedException e) {
-			// No need to handle, just shut down
-		} finally {
-			workerGroup.shutdownGracefully();
-			bossGroup.shutdownGracefully();
+			e.printStackTrace();
 		}
 	}
 
@@ -177,10 +173,6 @@ public class Server {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-	}
-
-	public static int getMaxUsers() {
-		return maxUsers;
 	}
 
 	public static LocalClient getLocalClient() {

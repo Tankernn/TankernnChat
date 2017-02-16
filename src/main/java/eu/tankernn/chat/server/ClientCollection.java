@@ -100,7 +100,7 @@ public class ClientCollection {
 	}
 
 	public void disconnectAll() {
-		clients.forEach(c -> c.disconnect());
+		clients.forEach(Client::disconnect);
 	}
 
 	/**
