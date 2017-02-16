@@ -103,6 +103,8 @@ public class ChatClient {
 			c = b.connect(address, port).sync().channel();
 			// Set username
 			send(username);
+			// Send empty message to get info packet
+			send("");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -113,7 +115,6 @@ public class ChatClient {
 	}
 	
 	public static void main(String[] arg) {
-		
 		try {
 			prop.load(new FileInputStream(confFile));
 		} catch (FileNotFoundException e) {
@@ -168,10 +169,6 @@ public class ChatClient {
 
 	public ChatWindow getChatWindow() {
 		return chatWindow;
-	}
-
-	public void setChatWindow(ChatWindow chatWindow) {
-		this.chatWindow = chatWindow;
 	}
 
 	public static ChatClient getInstance() {

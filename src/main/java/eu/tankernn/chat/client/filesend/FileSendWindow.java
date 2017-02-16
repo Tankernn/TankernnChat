@@ -140,6 +140,7 @@ public class FileSendWindow extends JFrame implements ActionListener {
 	
 	public void removeDownload(Download download) {
 		downloads.remove(download);
+		updateList();
 	}
 	
 	public void cancelUpload() {

@@ -19,7 +19,6 @@ public class ChatClientHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object fromServer) {
-	    System.out.println(fromServer);
 	    if (fromServer instanceof MessagePacket) {
 			MessagePacket mess = ((MessagePacket) fromServer);
 			client.getChatWindow().log(mess);
@@ -50,7 +49,16 @@ public class ChatClientHandler extends ChannelInboundHandlerAdapter {
 			}
 		} else if (fromServer instanceof FileSendDataPacket) {
 			client.getFileWindow().getDownload().handlePacket((FileSendDataPacket) fromServer);
+			return;
 		}
+	    System.out.println(fromServer);
+	}
+	
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		System.err.println("Cought exception in pipeline:");
+		cause.printStackTrace();
+		ctx.close();
 	}
 	
 	@Override

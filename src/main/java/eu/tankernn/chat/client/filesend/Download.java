@@ -44,6 +44,7 @@ public class Download implements Runnable {
 		monitor = new ProgressMonitor(null, "Downloading " + fileName + "...",
 				"0%", 0, 100);
 		monitor.setProgress(0);
+		c.getFileWindow().removeDownload(this);
 	}
 	
 	private void updateProgress() {
@@ -66,7 +67,7 @@ public class Download implements Runnable {
 			updateProgress();
 			if (received >= remoteSize) {
 				if (received > remoteSize)
-					System.err.println("Recieved more bytes than advertised.");
+					System.err.println("Received more bytes than advertised.");
 				finish();
 			}
 		} catch (IOException e) {
@@ -82,8 +83,6 @@ public class Download implements Runnable {
 			e.printStackTrace();
 		}
 		monitor.setNote("File transfer complete. File resides in " + dest);
-		c.getFileWindow().removeDownload(this);
-		c.getFileWindow().updateList();
 	}
 	
 	@Override
